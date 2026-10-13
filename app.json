@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "code-breaker",
+    "slug": "code-breaker",
+    "version": "1.0.0",
+    "orientation": "default",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE",
+        "foregroundImage": "./assets/android-icon-foreground.png",
+        "backgroundImage": "./assets/android-icon-background.png",
+        "monochromeImage": "./assets/android-icon-monochrome.png"
+      },
+      "predictiveBackGestureEnabled": false,
+      "package": "com.subasri0102.codebreaker"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "fd74b37e-2d6d-41c5-b556-9f94ea70918e"
+      }
+    },
+    "plugins": [
+      "expo-audio",
+      "expo-video"
+    ]
+  }
+}
