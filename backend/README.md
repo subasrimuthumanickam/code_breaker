@@ -10,7 +10,8 @@ to MySQL — the app no longer needs to trust the client with the answer.
 cd backend
 npm install
 cp .env.example .env      # then fill in your MySQL credentials
-mysql -u root -p < schema.sql
+mysql -u root -p code_breaker < migrations/001_recover_schema.sql
+mysql -u root -p code_breaker < seeds/dev_seed.sql   # development only
 npm run dev                # starts on http://localhost:4000
 ```
 

@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS guesses (
 
 CREATE TABLE IF NOT EXISTS cb_games (
   id              VARCHAR(36) PRIMARY KEY,
-  player_id       INT         NOT NULL,
+  player_id       VARCHAR(64) NOT NULL,
   difficulty      VARCHAR(20) NOT NULL,
   level           INT         NOT NULL,
   slots           INT         NOT NULL,
@@ -116,7 +116,7 @@ CREATE TABLE IF NOT EXISTS cb_guesses (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS cb_progress (
-  player_id   INT        NOT NULL,
+  player_id   VARCHAR(64) NOT NULL,
   level       INT        NOT NULL,
   best_stars  TINYINT    NOT NULL DEFAULT 0,
   times_won   INT        NOT NULL DEFAULT 0,
@@ -279,7 +279,7 @@ CREATE TABLE IF NOT EXISTS ws_coin_transactions (
   amount       INT          NOT NULL,
   round_id     INT          NULL,
   level        INT          NULL,
-  ref_key      VARCHAR(120) NOT NULL,
+  ref_key      VARCHAR(120) NULL,
   note         VARCHAR(255) NULL,
   created_at   TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE KEY uq_ws_coin_tx_ref (player_name, ref_key)
