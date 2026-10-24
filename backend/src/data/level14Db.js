@@ -1,61 +1,4 @@
-// // CHANGE this path to whatever your level12Db.js uses for the MySQL pool (mysql2/promise)
-// const pool = require('../config/db');
 
-// const SOLUTION = ['open_fridge', 'giraffe_in', 'close_fridge'];
-
-// async function createSession(playerId) {
-//   const [r] = await pool.query(
-//     'INSERT INTO bt_level14_sessions (player_id) VALUES (?)',
-//     [playerId]
-//   );
-//   return r.insertId;
-// }
-
-// async function getSession(sessionId, playerId) {
-//   const [rows] = await pool.query(
-//     'SELECT * FROM bt_level14_sessions WHERE id = ? AND player_id = ?',
-//     [sessionId, playerId]
-//   );
-//   return rows[0] || null;
-// }
-
-// async function addAction(sessionId, actionType) {
-//   await pool.query(
-//     'INSERT INTO bt_level14_actions (session_id, action_type) VALUES (?, ?)',
-//     [sessionId, actionType]
-//   );
-// }
-
-// async function getActions(sessionId) {
-//   const [rows] = await pool.query(
-//     'SELECT action_type FROM bt_level14_actions WHERE session_id = ? ORDER BY id ASC',
-//     [sessionId]
-//   );
-//   return rows.map(r => r.action_type);
-// }
-
-// // last 3 actions must be the exact solution order
-// function isSolved(actions) {
-//   const tail = actions.slice(-SOLUTION.length);
-//   return tail.length === SOLUTION.length && tail.every((a, i) => a === SOLUTION[i]);
-// }
-
-// async function completeSession(sessionId, playerId) {
-//   await pool.query(
-//     "UPDATE bt_level14_sessions SET status='completed', completed_at=NOW() WHERE id=?",
-//     [sessionId]
-//   );
-//   // ADJUST column names to match your brain_twist_progress table
-//   await pool.query(
-//     `INSERT INTO brain_twist_progress (player_id, level, completed, completed_at)
-//      VALUES (?, 14, 1, NOW())
-//      ON DUPLICATE KEY UPDATE completed = 1, completed_at = NOW()`,
-//     [playerId]
-//   );
-// }
-
-// module.exports = { createSession, getSession, addAction, getActions, isSolved, completeSession };
-// !!! LINE 1: copy the EXACT db require line from level11Db.js (or level10Db.js), keep the name `db`
 const db = require("../db");
 
 const LEVEL = 14;
@@ -65,11 +8,7 @@ const one = async (sql, params = []) => {
   return rows[0] || null;
 };
 
-/* ---------------------------------------------------------
-   TABLES  (created once when the server starts)
-   bt_level14_sessions : one row per game
-   bt_level14_actions  : every action (open_fridge / giraffe_in / close_fridge)
---------------------------------------------------------- */
+
 
 const ready = (async () => {
   await db.query(`

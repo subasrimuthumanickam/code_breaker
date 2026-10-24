@@ -7,11 +7,7 @@ const one = async (sql, params = []) => {
   return rows[0] || null;
 };
 
-/* ---------------------------------------------------------
-   TABLES  (created once when the server starts)
-   bt_level18_sessions : one row per game
-   bt_level18_answers  : every word the player arranged (right or wrong)
---------------------------------------------------------- */
+
 
 const ready = (async () => {
   await db.query(`

@@ -3,15 +3,7 @@ const { pool } = require("../utils/playerActivity");
 
 const router = express.Router();
 
-/*
-  POST /api/auth/logout
 
-  Request : { "playerId": 2 }
-  Response: { "success": true, "message": "Logged out" }
-
-  Run this once in MySQL:
-  ALTER TABLE player ADD COLUMN last_logout DATETIME NULL;
-*/
 router.post("/auth/logout", async (req, res) => {
   try {
     console.log("\n========== POST /api/auth/logout ==========");

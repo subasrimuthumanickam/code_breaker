@@ -13,12 +13,9 @@ function pickReward() {
   return { reward: SPIN_REWARDS[0], index: 0 };
 }
 
-// TODO: ithai ungal game session data ku connect pannunga.
-// Ungal round-complete logic la session-ku ethana round mudinjuchu nu DB la
-// irukkum; athai inga read pannunga. Client sollrathai nambakoodathu.
+
 async function getRoundsCompleted(playerId, sessionId) {
-  // example: const s = await GameSession.findOne({ _id: sessionId, playerId });
-  //          return s ? s.roundsCompleted : 0;
+  
   return ROUNDS_REQUIRED_FOR_SPIN; // dev only
 }
 

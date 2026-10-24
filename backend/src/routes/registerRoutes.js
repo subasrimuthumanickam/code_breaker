@@ -13,10 +13,7 @@ const NAME_REGEX = /^[A-Za-z]+(?: [A-Za-z]+)*$/;
 const PHONE_REGEX = /^\+91[6-9]\d{9}$/;
 const GENDERS = ["Male", "Female", "Other"];
 
-/* ------------------------------------------------------------------
-   Make sure the `player` table has the columns we need.
-   Runs once, only adds what is missing.
------------------------------------------------------------------- */
+
 let schemaPromise = null;
 
 function ensureSchema() {

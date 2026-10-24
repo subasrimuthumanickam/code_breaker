@@ -1,42 +1,9 @@
-// // Level 16 - "Who didn't take the last slice of pizza?"
-// // Correct answer inga mattum irukku. Frontend ku ANSWER anuppave koodathu.
 
-// const ANSWER = 'B';
-
-// const LEVEL16 = {
-//   level: 16,
-//   title: 'LEVEL 16',
-//   subtitle: 'Only one person is lying…',
-//   question: "Who didn't take the last slice of pizza?",
-//   options: ['A', 'B', 'C', 'D'],
-//   statements: [
-//     { id: 'A', text: "I didn't take it!" },
-//     { id: 'B', text: 'I was watching TV the whole time.' },
-//     { id: 'C', text: "I didn't take it!" },
-//     { id: 'D', text: "I didn't take it either!" },
-//   ],
-// };
-
-// const HINTS = [
-//   'Look carefully at the clues!',
-//   'Check the whole room. Is there a TV anywhere?',
-//   "Somebody's alibi doesn't match the room. Look at B.",
-// ];
-
-// const EXPLANATION =
-//   "B is the liar. He says he was watching TV the whole time, but there is no TV in the room! " +
-//   'Also, there are crumbs on his plate, so his alibi is suspicious.';
-
-// module.exports = { ANSWER, LEVEL16, HINTS, EXPLANATION };
 const db = require('../db');
 
 const LEVEL = 16;
 
-/* ---------------------------------------------------------
-   LEVEL 16 - "Only one person is lying... Who didn't take the last slice of pizza?"
-   The correct answer lives ONLY here (backend). It is never sent to the frontend
-   before the player answers correctly.
---------------------------------------------------------- */
+
 
 const ANSWER = 'B';
 

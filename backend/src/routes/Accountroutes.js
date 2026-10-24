@@ -1,70 +1,4 @@
-// const express = require("express");
-// const router = express.Router();
-// const db = require("../db"); // same db.js (mysql2 promise pool)
 
-// // deviceId is created by the app (letters + numbers)
-// const DEVICE_REGEX = /^[A-Za-z0-9-]{8,64}$/;
-
-// const randomName = (prefix) =>
-//   `${prefix}${Math.floor(1000 + Math.random() * 9000)}`;
-
-// /*
-//   Uses the SAME `player` table as the rest of the game, so progress,
-//   coins, levels etc. stay connected to the player id.
-
-//   Login  -> player.device_id = deviceId
-//   Guest  -> player.device_id = "guest-" + deviceId   (separate guest account)
-// */
-// async function findOrCreate(deviceKey, prefix) {
-//   const [rows] = await db.query(
-//     "SELECT id, name FROM player WHERE device_id = ? LIMIT 1",
-//     [deviceKey]
-//   );
-
-//   if (rows.length > 0) {
-//     return { player: { id: rows[0].id, name: rows[0].name }, isNew: false };
-//   }
-
-//   const name = randomName(prefix);
-//   const [result] = await db.query(
-//     "INSERT INTO player (name, device_id) VALUES (?, ?)",
-//     [name, deviceKey]
-//   );
-
-//   return { player: { id: result.insertId, name }, isNew: true };
-// }
-
-// const handle = (type, prefix, keyOf) => async (req, res) => {
-//   try {
-//     const { deviceId } = req.body || {};
-
-//     // 1. Validate request
-//     if (typeof deviceId !== "string" || !DEVICE_REGEX.test(deviceId)) {
-//       return res.status(400).json({ success: false, error: "Invalid device id" });
-//     }
-
-//     // 2. Read / save in database
-//     const { player, isNew } = await findOrCreate(keyOf(deviceId), prefix);
-
-//     // 3. JSON response to frontend
-//     return res.json({
-//       success: true,
-//       message: isNew ? "Account created" : "Welcome back",
-//       player: { ...player, type },
-//     });
-//   } catch (err) {
-//     console.error(`auth/${type} error:`, err);
-//     return res.status(500).json({ success: false, error: "Server error" });
-//   }
-// };
-
-// // POST /api/auth/login
-// router.post("/auth/login", handle("user", "Player", (d) => d));
-
-// // POST /api/auth/guest
-// router.post("/auth/guest", handle("guest", "Guest", (d) => `guest-${d}`));
-
-// module.exports = router;
 const express = require("express");
 const router = express.Router();
 const db = require("../db"); // same db.js (mysql2 promise pool)
@@ -75,13 +9,6 @@ const DEVICE_REGEX = /^[A-Za-z0-9-]{8,64}$/;
 const randomName = (prefix) =>
   `${prefix}${Math.floor(1000 + Math.random() * 9000)}`;
 
-/*
-  Uses the SAME `player` table as the rest of the game, so progress,
-  coins, levels etc. stay connected to the player id.
-
-  Login  -> player.device_id = deviceId
-  Guest  -> player.device_id = "guest-" + deviceId   (separate guest account)
-*/
 async function findOrCreate(deviceKey, prefix) {
   const [rows] = await db.query(
     "SELECT id, name FROM player WHERE device_id = ? LIMIT 1",

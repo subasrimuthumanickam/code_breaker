@@ -1,26 +1,4 @@
-// // Central place to tune the economy.
 
-// // Gift (per round) reward, by level tier. Level 1 -> 10 coins.
-// const GIFT_TIERS = [
-//   { maxLevel: 5, coins: 10 },
-//   { maxLevel: 15, coins: 15 },
-//   { maxLevel: 30, coins: 20 },
-//   { maxLevel: 50, coins: 25 },
-// ];
-
-// const HINT_COST = 5; // coins spent per hint / clue use
-
-// const LEVEL_BLOCK_SIZE = 5; // every 5 levels completed...
-// const LEVEL_BLOCK_BONUS = 30; // ...pays this many coins
-
-// const getGiftCoins = (level) => {
-//   const lvl = Math.max(1, Number(level) || 1);
-//   const tier = GIFT_TIERS.find((t) => lvl <= t.maxLevel) || GIFT_TIERS[GIFT_TIERS.length - 1];
-//   return tier.coins;
-// };
-
-// module.exports = { HINT_COST, LEVEL_BLOCK_SIZE, LEVEL_BLOCK_BONUS, getGiftCoins };
-// Central place to tune the economy.
 
 const ROUND_COMPLETION_REWARD_COINS = 10;
 const ROUND_THREE_GIFT_BONUS_COINS = 20;
