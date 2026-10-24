@@ -1,12 +1,4 @@
-/* ---------------------------------------------------------
-   LEVEL 10 - "tilt" tic-tac-toe (server copy of the rules)
 
-   board: 9 numbers, 0 = empty, 1 = X (the player), 2 = O (the rival)
-   The player may TAP an empty square (the rival answers at once)
-   or SWIPE the board: every piece slides to that side like gravity.
-   The start boards look lost for X, and tapping can never win.
-   The only win is the right swipe.
---------------------------------------------------------- */
 
 const LINES = [
   [0, 1, 2], [3, 4, 5], [6, 7, 8],

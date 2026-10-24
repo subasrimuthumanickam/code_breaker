@@ -1,7 +1,6 @@
-// // Brain Twist - Level 5: Cucumber vs Zucchini
-// // Stage 1 + 2: pick the cucumbers (tomatoes are wrong), picked cucumbers hide.
-// // Stage 3: zucchini look like cucumbers. Tapping one is wrong -> everything is rearranged.
-// // The server owns the layout and the answers. The frontend only draws what it is sent.
+
+
+
 // const express = require('express');
 // const L5 = require('../data/level5Db');
 
@@ -22,18 +21,22 @@
 // ];
 
 // const STAGES = {
-//   1: { title: 'Pick the cucumbers!', hint: 'Tap every cucumber', cucumber: 3, tomato: 4, zucchini: 0,
+//   1: { title: 'Pick the cucumbers!', hint: 'Tap every cucumber', cucumber: 3, tomato: 4, zucchini: 0, gourd: 0,
 //        right: 'Nice! Now find them again.' },
-//   2: { title: 'Pick the cucumbers!', hint: 'Tap every cucumber', cucumber: 4, tomato: 3, zucchini: 0,
+//   2: { title: 'Pick the cucumbers!', hint: 'Tap every cucumber', cucumber: 3, tomato: 2, zucchini: 0, gourd: 2,
 //        right: 'Careful... something looks different now.' },
-//   3: { title: 'Pick the cucumbers!', hint: 'Are you sure that is a cucumber?', cucumber: 2, tomato: 2, zucchini: 3,
+//   3: { title: 'Pick the cucumbers!', hint: 'Are you sure that is a cucumber?', cucumber: 2, tomato: 1, zucchini: 3, gourd: 1,
 //        right: 'You found the real cucumbers!' },
 // };
 
 // const WRONG = {
 //   tomato: 'A tomato is not a cucumber!',
 //   zucchini: 'Oops! That is a zucchini. Find the real cucumber!',
+//   gourd: 'That is a bitter gourd, not a cucumber!',
 // };
+
+// // look-alikes: in the last stage tapping one rearranges the whole board
+// const LOOKALIKES = ['zucchini', 'gourd'];
 
 // /* ---------------- layout helpers ---------------- */
 
@@ -52,6 +55,7 @@
 //     ...Array(s.cucumber).fill('cucumber'),
 //     ...Array(s.tomato).fill('tomato'),
 //     ...Array(s.zucchini).fill('zucchini'),
+//     ...Array(s.gourd).fill('gourd'),
 //   ]);
 //   const slots = shuffle(SLOTS.map((_, i) => i));
 //   return kinds.map((kind, i) => ({ id: i + 1, kind, slot: slots[i], hidden: false }));
@@ -138,7 +142,7 @@
 
 //   /* ----- wrong pick ----- */
 //   if (item.kind !== 'cucumber') {
-//     const shuffled = item.kind === 'zucchini';          // zucchini -> rearrange everything
+//     const shuffled = stage === LAST_STAGE && LOOKALIKES.includes(item.kind);   // look-alike in the last stage -> rearrange everything
 //     if (shuffled) layout = reshuffle(layout);
 //     await L5.recordPick(sessionId, stage, itemId, item.kind, false, shuffled);
 //     if (shuffled) await L5.saveLayout(sessionId, layout, stage);
@@ -240,11 +244,6 @@
 
 // r._test = { buildLayout, reshuffle, itemsView, remaining, STAGES };
 // module.exports = r;
-// Brain Twist - Level 5: Cucumber vs Zucchini
-// Stage 1 + 2: pick the cucumbers (tomatoes are wrong), picked cucumbers hide.
-// Stage 2 adds bitter gourds, stage 3 adds zucchini - both look like cucumbers on purpose.
-// Stage 3: tapping a look-alike is wrong -> everything is rearranged.
-// The server owns the layout and the answers. The frontend only draws what it is sent.
 const express = require('express');
 const L5 = require('../data/level5Db');
 
@@ -278,9 +277,6 @@ const WRONG = {
   zucchini: 'Oops! That is a zucchini. Find the real cucumber!',
   gourd: 'That is a bitter gourd, not a cucumber!',
 };
-
-// look-alikes: in the last stage tapping one rearranges the whole board
-const LOOKALIKES = ['zucchini', 'gourd'];
 
 /* ---------------- layout helpers ---------------- */
 
@@ -384,12 +380,12 @@ r.post('/pick', handle(async (req, res) => {
   const item = layout.find((i) => i.id === itemId);
   if (!item || item.hidden) return bad(res, 400, 'invalid_move', 'That item cannot be picked');
 
-  /* ----- wrong pick ----- */
+  /* ----- wrong pick: the whole board is rearranged in every stage ----- */
   if (item.kind !== 'cucumber') {
-    const shuffled = stage === LAST_STAGE && LOOKALIKES.includes(item.kind);   // look-alike in the last stage -> rearrange everything
-    if (shuffled) layout = reshuffle(layout);
+    const shuffled = true;
+    layout = reshuffle(layout);
     await L5.recordPick(sessionId, stage, itemId, item.kind, false, shuffled);
-    if (shuffled) await L5.saveLayout(sessionId, layout, stage);
+    await L5.saveLayout(sessionId, layout, stage);
 
     return res.json({
       success: true,

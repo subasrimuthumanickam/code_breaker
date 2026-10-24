@@ -1,10 +1,4 @@
-// backend/src/routes/Braintwistlevel4routes.js
-// Brain Twist - LEVEL 4 routes: read the request, call level4Db.js, send JSON back.
-//
-// Puzzle: the girl must dive into the pool and catch the fish.
-//   The player raises the water (0 - 100) and presses JUMP.
-//   waterLevel >= REQUIRED_LEVEL  -> safe splash, she catches the fish (win)
-//   otherwise                     -> she hits the bottom, try again
+
 
 const express = require('express');
 const L4 = require('../data/level4Db');
@@ -17,9 +11,7 @@ const COST_HINT = 25;
 const COST_SKIP = 50;
 const REWARD_VIDEO = 75;
 
-/* ---------------------------------------------------------
-   PUZZLE  (the right answer stays on the server)
---------------------------------------------------------- */
+
 
 const PUZZLE = {
   question: 'She must do a dive jump successfully.',

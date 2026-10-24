@@ -1,10 +1,4 @@
-/* ---------------------------------------------------------
-   LEVEL 10 - "tilt" tic-tac-toe (the same rules as the server)
 
-   board: 9 numbers, 0 = empty, 1 = X (the player), 2 = O (the rival)
-   TAP an empty square -> the rival answers at once
-   SWIPE the board     -> every piece slides to that side like gravity
---------------------------------------------------------- */
 
 export type Board = number[];
 export type Dir = 'L' | 'R' | 'U' | 'D';

@@ -7,11 +7,7 @@ const one = async (sql, params = []) => {
   return rows[0] || null;
 };
 
-/* ---------------------------------------------------------
-   TABLES  (created once when the server starts)
-   bt_level9_sessions : one row per game (the maze seed, status, moves, hints used)
-   bt_level9_runs     : the way the dog walked, saved when the level is won
---------------------------------------------------------- */
+
 
 const ready = (async () => {
   await db.query(`

@@ -7,11 +7,7 @@ const one = async (sql, params = []) => {
   return rows[0] || null;
 };
 
-/* ---------------------------------------------------------
-   TABLES  (created once when the server starts)
-   bt_level10_sessions : one row per game (the start board seed, status, hints used)
-   bt_level10_runs     : what the player did (taps and swipes), saved when the level is won
---------------------------------------------------------- */
+
 
 const ready = (async () => {
   await db.query(`

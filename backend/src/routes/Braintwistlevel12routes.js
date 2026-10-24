@@ -9,10 +9,7 @@ const COST_HINT = 25;
 const COST_SKIP = 50;
 const REWARD_VIDEO = 75;
 
-/* ---------------------------------------------------------
-   PUZZLE  (the answer stays on the server)
-   She is late for school: tapping the CALENDAR changes the date to Oct 2.
---------------------------------------------------------- */
+
 
 const TITLE = 'Oh no! She is so late for school today!';
 

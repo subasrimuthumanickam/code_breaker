@@ -31,9 +31,7 @@ interface FinalStandings {
   totalRounds: number;
 }
 
-/* =========================================================
-   PROPS
-========================================================= */
+
 
 interface GameOverScreenProps {
   roomCode: string;
@@ -50,9 +48,7 @@ const PODIUM_COLORS = [
   "#CD7F32",
 ];
 
-/* =========================================================
-   COMPONENT
-========================================================= */
+
 
 const GameOverScreen: React.FC<GameOverScreenProps> = ({
   roomCode,
@@ -62,9 +58,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
 }) => {
   const [data, setData] = useState<FinalStandings | null>(null);
 
-  /* =======================================================
-     LOAD FINAL STANDINGS
-  ======================================================= */
+
 
   useEffect(() => {
     let mounted = true;
@@ -87,9 +81,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     };
   }, [roomCode]);
 
-  /* =======================================================
-     LOADING
-  ======================================================= */
+  
 
   if (!data) {
     return (
@@ -111,9 +103,7 @@ const GameOverScreen: React.FC<GameOverScreenProps> = ({
     );
   }
 
-  /* =======================================================
-     PLAYER DATA
-  ======================================================= */
+
 
   const winner: StandingPlayer | undefined =
     data.standings[0];

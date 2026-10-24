@@ -9,9 +9,7 @@ interface LockAnimationProps {
   digits?: string[];
 }
 
-/* ------------------------------------------------------------------ */
-/* Timing + geometry (design space = 280 x 280)                        */
-/* ------------------------------------------------------------------ */
+
 
 const BASE = 280;
 const LOOP_MS = 7000; // one full "key opens lock" cycle

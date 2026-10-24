@@ -9,12 +9,7 @@ const COST_HINT = 25;
 const COST_SKIP = 50;
 const REWARD_VIDEO = 75;
 
-/* ---------------------------------------------------------
-   PUZZLE  (the answer stays on the server)
-   5 - 15 - 25 - ( ? ) - 100
-   The number is hidden under the circle. Moving the circle asks the
-   server to /reveal it, then the player types it on the keypad.
---------------------------------------------------------- */
+
 
 const TITLE = 'What is the hidden number?';
 const SEQUENCE = { before: [5, 15, 25], after: [100] };
@@ -27,9 +22,6 @@ const grade = (attempts) => {
   return { score: 100, stars: 1 };
 };
 
-/* ---------------------------------------------------------
-   HELPERS
---------------------------------------------------------- */
 
 const handle = (fn) => async (req, res) => {
   try {
@@ -196,9 +188,7 @@ r.post('/hint', handle(async (req, res) => {
   res.json({ success: true, text: HINT_TEXT, hints, cost: COST_HINT });
 }));
 
-/* ---------------------------------------------------------
-   POST /skip   body: { sessionId, playerId }   (costs 50 hints)
---------------------------------------------------------- */
+
 
 r.post('/skip', handle(async (req, res) => {
   const ctx = await openSession(req, res);

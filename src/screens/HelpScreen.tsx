@@ -12,9 +12,7 @@ interface HelpScreenProps {
   playerName?: string;
 }
 
-/* =====================================================
-   DESIGN TOKENS
-===================================================== */
+
 const GREEN = "#22C55E";
 const YELLOW = "#F5C518";
 const GREY = "#4B5563";

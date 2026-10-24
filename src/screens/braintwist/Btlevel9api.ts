@@ -8,9 +8,9 @@ export type Level9View = {
   title: string;
   cols: number;
   rows: number;
-  cells: number[];      // one number per cell: open sides (1 = up, 2 = right, 4 = down, 8 = left)
-  start: number;        // cell index where the dog starts
-  goal: number;         // cell index of the bone (at the dog house)
+  cells: number[];     
+  start: number;       
+  goal: number;        
   hints: number;
 };
 

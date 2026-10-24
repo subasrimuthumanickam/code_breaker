@@ -2,13 +2,6 @@ import React from 'react';
 import { View, Image } from 'react-native';
 import Svg, { Circle, Path, Rect, Ellipse, G, Polygon } from 'react-native-svg';
 
-/* =========================================================
-   REAL PICTURES (optional)
-   Real images ready aana apram null-ku badhula require podunga:
-   export const SPOT_A_IMG:any=require('../../../assets/spot_left.png');
-   export const SPOT_B_IMG:any=require('../../../assets/spot_right.png');
-   null irundha keezha irukkura drawn scene use aagum.
-========================================================= */
 export const SPOT_A_IMG: any = null;
 export const SPOT_B_IMG: any = null;
 
