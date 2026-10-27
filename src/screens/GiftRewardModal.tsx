@@ -10,7 +10,7 @@ import { playSound } from "../utils/sound";
 interface Props {
   coins?: number; // default 30
   onClaim?: () => void | Promise<void>; // called once, when the coins are revealed (save them here)
-  onClose: () => void; // called after the user taps "Awesome!"
+  onClose: () => void; 
 }
 
 const STAGE_W = 300;

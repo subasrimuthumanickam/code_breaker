@@ -11,16 +11,7 @@ import {
   Platform,
 } from 'react-native';
 
-/**
- * BTSkipRiddle - riddle screen shown when the red SKIP button is pressed on Level 1.
- * Self-contained: NO image file needed (everything is drawn with Views).
- *
- * Props (same as BTGameScreen.tsx uses):
- *   hints     - hint balance shown in the top-right pill
- *   onHome    - home button
- *   onBack    - gear button / Android back -> return to Level 1
- *   onSkipped - called after the right answer. Return '' for success, else an error message.
- */
+
 type Props = {
   hints?: number;
   onHome?: () => void;
