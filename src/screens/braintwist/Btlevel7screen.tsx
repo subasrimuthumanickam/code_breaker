@@ -707,8 +707,8 @@ const FONT:any=Platform.select({ios:'Chalkboard SE',android:'sans-serif-condense
 // one clue per stage (stage 1 = clock, stage 2 = timetable, stage 3 = coins)
 const CLUES:Record<number,string>={
   1:'The right time may be hiding in the wrong place… or is the wrong time right in front of you?',
-  2:'The day has changed, but has the timetable changed with it? Check what yesterday is telling you…',
-  3:'She already has some coins… but is the ticket price asking for more, or just the right amount?',
+  2:'Find the day that comes right after Tuesday. Look for the book with that day\'s name on it.',
+  3:'She already has some coins… but how many more coins does she need to buy the ticket?',
 };
 
 type Props={
