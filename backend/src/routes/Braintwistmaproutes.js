@@ -936,11 +936,11 @@ const db = require('../db');
 
 const r = express.Router();
 
-const MAP_SIZE = 41; // bubbles drawn on the level map picture
+const MAP_SIZE = 50; // bubbles drawn on the level map picture
 
 // Levels that are playable. Levels 3, 4, 5, 6, 7 have their own tables (bt_level3_* ...),
 // so they are NOT in bt_levels. Raise this number every time you build a new level.
-const BUILT_LEVELS = 31;
+const BUILT_LEVELS = 50;
 
 console.log('[BrainTwist Map] NEW unlocked version loaded (built levels: ' + BUILT_LEVELS + ')');
 
