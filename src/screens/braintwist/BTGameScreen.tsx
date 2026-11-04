@@ -50,6 +50,13 @@ import BTLevel40Screen from './Btlevel40screen'; // NEW: level 40 - find the sec
 import BTLevel41Screen from './Btlevel41screen'; // NEW: level 41 - clouds raining B (B + RAIN, answer BRAIN)
 import BTLevel42Screen from './Btlevel42screen'; // NEW: level 42 - how many pizza slices? (drag slices, answer 9)
 import BTLevel43Screen from './Btlevel43screen'; // NEW: level 43 - feed the monkey (drag the banana to the monkey)
+import BTLevel44Screen from './Btlevel44screen'; // NEW: level 44 - "We need 9 apples." (drag the apples into the bowl, 9 flips into 6)
+import BTLevel45Screen from './Btlevel45screen'; // NEW: level 45 - pick the colour (3 stages: red, yellow, 'red')
+import BTLevel46Screen from './Btlevel46screen'; // NEW: level 46 - remove 6 sticks and make it TEN (drag the matchsticks out)
+import BTLevel47Screen from './Btlevel47screen'; // NEW: level 47 - click the numbers from low to high (start from the bottom)
+import BTLevel48Screen from './Btlevel48screen'; // NEW: level 48 - how many rectangles are there? (counter, answer 9)
+import BTLevel49Screen from './Btlevel49screen'; // NEW: level 49 - what does the picture say? (pyramid of T's, 5 letters)
+import BTLevel50Screen from './Btlevel50screen'; // NEW: level 50
 import {completeLevel} from './mapApi';
 
 const GREEN='#c5f158',CHALK='#f6f4ea';
@@ -539,6 +546,13 @@ const st=StyleSheet.create({
    Level 41 -> BTLevel41Screen (Braintwistlevel41routes.js + data/level41Db.js)  NEW (clouds raining B, B + RAIN, answer BRAIN)
    Level 42 -> BTLevel42Screen (Braintwistlevel42routes.js + data/level42Db.js)  NEW (how many pizza slices, drag to reveal hidden slices, answer 9)
    Level 43 -> BTLevel43Screen (Braintwistlevel43routes.js + data/level43Db.js)  NEW (feed the monkey, drag the banana to the monkey)
+   Level 44 -> BTLevel44Screen (Braintwistlevel44routes.js + data/level44Db.js)  NEW ("We need 9 apples." drag the apples into the bowl, 9 flips into 6, answer 6)
+   Level 45 -> BTLevel45Screen (Braintwistlevel45routes.js + data/level45Db.js)  NEW (pick the colour, 3 stages: red / yellow / 'red')
+   Level 46 -> BTLevel46Screen (Braintwistlevel46routes.js + data/level46Db.js)  NEW (remove 6 sticks and make it TEN, drag the matchsticks out)
+   Level 47 -> BTLevel47Screen (Braintwistlevel47routes.js + data/level47Db.js)  NEW (click the numbers from low to high, start from the bottom: 578 -> -459)
+   Level 48 -> BTLevel48Screen (Braintwistlevel48routes.js + data/level48Db.js)  NEW (how many rectangles are there? counter + SUBMIT, answer 9)
+   Level 49 -> BTLevel49Screen (Braintwistlevel49routes.js + data/level49Db.js)  NEW (what does the picture say? pyramid of T's, type the 5-letter word)
+   Level 50 -> BTLevel50Screen (Braintwistlevel50routes.js + data/level50Db.js)  NEW
    Every other level uses the generic game screen above. */
 export default function BTGameScreen(props:any){
   const {n,player,hints,setHints,onWin,onHome}=props;
@@ -800,6 +814,48 @@ export default function BTGameScreen(props:any){
     onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
   // NEW: level 43 - feed the monkey, drag the banana to the monkey (Braintwistlevel43routes.js)
   if(n===43)return <BTLevel43Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 44 - "We need 9 apples." drag the apples into the bowl, 9 flips into 6 (Braintwistlevel44routes.js)
+  if(n===44)return <BTLevel44Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 45 - pick the colour, 3 stages: red / yellow / 'red' (Braintwistlevel45routes.js)
+  if(n===45)return <BTLevel45Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 46 - remove 6 sticks and make it TEN, drag the matchsticks out (Braintwistlevel46routes.js)
+  if(n===46)return <BTLevel46Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 47 - click the numbers from low to high, start from the bottom (Braintwistlevel47routes.js)
+  if(n===47)return <BTLevel47Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 48 - how many rectangles are there? counter + SUBMIT, answer 9 (Braintwistlevel48routes.js)
+  if(n===48)return <BTLevel48Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 49 - what does the picture say? pyramid of T's, type the 5-letter word (Braintwistlevel49routes.js)
+  if(n===49)return <BTLevel49Screen
+    playerId={player.id}
+    {...({hints,setHints} as any)}
+    onExit={onHome}
+    onComplete={(r:any)=>finish(r,{tries:Math.max(1,Number(r?.attempts)||1),hints:0,skipped:!!r?.skipped})}/>;
+  // NEW: level 50 (Braintwistlevel50routes.js + data/level50Db.js)
+  if(n===50)return <BTLevel50Screen
     playerId={player.id}
     {...({hints,setHints} as any)}
     onExit={onHome}
