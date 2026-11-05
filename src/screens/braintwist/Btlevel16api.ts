@@ -7,9 +7,14 @@ export type Level16Data = {
   title: string;
   subtitle: string;
   question: string;
-  options: string[];
-  statements: { id: string; text: string }[];
+  pieces: string[]; // ['red', 'green', 'cyan']
+  frames: string[]; // ['f1', 'f2', 'f3']
+  hintCount: number;
+  hintCost: number;
 };
+
+// which frame each piece is in, e.g. { red: 'f1', green: 'f2', cyan: 'f3' }
+export type Placements = Record<string, string>;
 
 async function call<T>(path: string, body?: object): Promise<T> {
   const res = await fetch(`${PREFIX}${path}`, {
@@ -27,24 +32,33 @@ async function call<T>(path: string, body?: object): Promise<T> {
 }
 
 export const startLevel16 = (playerId: number) =>
-  call<{ success: boolean; sessionId: number; hintsUsed: number; wrongAttempts: number; level: Level16Data }>(
-    '/start',
-    { playerId }
-  );
+  call<{
+    success: boolean;
+    sessionId: number;
+    hintsUsed: number;
+    wrongAttempts: number;
+    hints: number;
+    clues: string[];
+    level: Level16Data;
+  }>('/start', { playerId });
 
-export const answerLevel16 = (playerId: number, sessionId: number, choice: string) =>
+export const answerLevel16 = (playerId: number, sessionId: number, placements: Placements) =>
   call<{
     success: boolean;
     correct: boolean;
     explanation: string | null;
+    message?: string;
     attempts: number;
     wrongAttempts: number;
     hintsUsed: number;
     seconds: number;
-  }>('/answer', { playerId, sessionId, choice });
+  }>('/answer', { playerId, sessionId, placements });
 
 export const hintLevel16 = (playerId: number, sessionId: number) =>
-  call<{ success: boolean; hint: { text: string }; hints: number }>('/hint', { playerId, sessionId });
+  call<{ success: boolean; hint: { number: number; text: string }; hints: number; cost: number }>(
+    '/hint',
+    { playerId, sessionId }
+  );
 
 export const skipLevel16 = (playerId: number, sessionId: number) =>
   call<{ success: boolean; skipped: boolean; attempts: number; hints: number }>('/skip', {

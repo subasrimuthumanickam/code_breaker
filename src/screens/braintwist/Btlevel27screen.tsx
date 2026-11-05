@@ -1,3 +1,4 @@
+
 // // import React,{useCallback,useEffect,useRef,useState} from 'react';
 // // import {View,Text,TouchableOpacity,Animated,Platform,StyleSheet,ActivityIndicator,useWindowDimensions} from 'react-native';
 // // import {Stage,Coin} from './BTShared';
@@ -19,10 +20,26 @@
 
 // // const clamp=(v:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,v));
 
+// // // computer-style keyboard: numbers, letters, symbols
+// // const BACK='⌫';
+// // const KEY_ROWS:string[][]=[
+// //   '1234567890'.split(''),
+// //   'QWERTYUIOP'.split(''),
+// //   'ASDFGHJKL'.split(''),
+// //   [...'ZXCVBNM'.split(''),BACK],
+// //   ['+','-','×','÷','=','(',')','.','!','?'],
+// // ];
+// // const MAX_LEN=3;
+
 // // export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComplete}:Props){
 // //   const {width}=useWindowDimensions();
 // //   const bw=Math.floor(clamp(width-48,240,380));   // board width
 // //   const bh=Math.round(bw*0.62);                   // board height
+
+// //   // keyboard key size: 10 keys per row
+// //   const kbW=Math.min(width,420)-16;
+// //   const GAP=5;
+// //   const kw=Math.floor((kbW-GAP*9-16)/10);
 
 // //   const [view,setView]=useState<Level27View|null>(null);
 // //   const [loadErr,setLoadErr]=useState('');
@@ -80,12 +97,12 @@
 // //     if(result)Animated.spring(pop,{toValue:1,friction:5,tension:70,useNativeDriver:true}).start();
 // //   },[result]);
 
-// //   // 2. send the typed number; the backend checks it and saves the attempt
+// //   // 2. send the typed key; the backend checks it and saves the attempt
 // //   const submit=async()=>{
 // //     if(!typed||busy.current||done||!view)return;
 // //     busy.current=true;
 // //     try{
-// //       const r=await answerLevel27({sessionId:view.sessionId,playerId,answer:Number(typed)});
+// //       const r=await answerLevel27({sessionId:view.sessionId,playerId,answer:typed as any});
 // //       if(typeof r.hints==='number'&&setHints)setHints(r.hints);
 // //       if(r.correct){
 // //         setSolved(typed);setKeypad(false);setDone(true);setConfirmSkip(false);
@@ -149,7 +166,12 @@
 // //     }finally{busy.current=false}
 // //   };
 
-// //   const onDigit=(d:number)=>{if(!done)setTyped(x=>((x==='0'?'':x)+d).slice(0,3))};
+// //   // keyboard press
+// //   const onKey=(k:string)=>{
+// //     if(done)return;
+// //     if(k===BACK)setTyped(x=>x.slice(0,-1));
+// //     else setTyped(x=>(x+k).slice(0,MAX_LEN));
+// //   };
 
 // //   /* ---------- header ---------- */
 // //   const header=(
@@ -196,12 +218,13 @@
 
 // //   const digit=Math.round(bw*0.17);
 // //   const qScale=pulse.interpolate({inputRange:[0,1],outputRange:[1,1.14]});
+// //   const kbOpen=keypad&&!done;
 
 // //   return <Stage bg="#bddaee"><View style={st.root}>
 // //     <RoomBackground/>
 // //     {header}
 
-// //     <View style={st.center}>
+// //     <View style={[st.center,kbOpen&&{paddingBottom:300}]}>
 // //       {/* question pill */}
 // //       <View style={st.qPill}>
 // //         <Text style={st.qArrow}>{'<'}</Text>
@@ -216,7 +239,7 @@
 // //             <View key={ri} style={st.row}>
 // //               {row.map((v,ci)=>{
 // //                 if(v!==null)return <View key={ci} style={st.cell}><ChalkDigit t={v} size={digit}/></View>;
-// //                 // the missing number
+// //                 // the missing one
 // //                 const shown=solved||typed;
 // //                 return <TouchableOpacity key={ci} style={st.cell} activeOpacity={0.8} disabled={done}
 // //                   onPress={()=>{setKeypad(true);setConfirmSkip(false)}}>
@@ -233,7 +256,7 @@
 // //     </View>
 
 // //     {/* bottom rounded panel */}
-// //     <View style={st.panel}>
+// //     {!kbOpen&&<View style={st.panel}>
 // //       <View style={st.btnCol}>
 // //         <TouchableOpacity style={st.ringGreen} activeOpacity={0.85} onPress={onHint}>
 // //           <View style={st.circleGreen}><Icon n="search" s={32}/></View>
@@ -254,28 +277,31 @@
 // //         </TouchableOpacity>
 // //         <View style={st.badge}><Icon n="bulb" s={13}/><Text style={st.badgeT}>50</Text></View>
 // //       </View>
-// //     </View>
-
-// //     {/* number pad */}
-// //     {keypad&&!done&&<View style={st.overlay}>
-// //       <Animated.View style={[st.padCard,{transform:[{translateX:shake}]}]}>
-// //         <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={()=>{setKeypad(false);setTyped('')}}>
-// //           <Text style={st.closeT}>✕</Text>
-// //         </TouchableOpacity>
-// //         <Text style={st.padTitle}>Your answer</Text>
-
-// //         <View style={st.padRow}>
-// //           <TouchableOpacity style={[st.side,{backgroundColor:'#e8523f'}]} onPress={()=>setTyped('')}><Text style={st.sideT}>⌫</Text></TouchableOpacity>
-// //           <View style={st.display}><Text style={st.displayT}>{typed}</Text></View>
-// //           <TouchableOpacity style={[st.side,{backgroundColor:'#b6ef63',opacity:typed?1:0.5}]} disabled={!typed} onPress={submit}><Text style={st.sideT}>✓</Text></TouchableOpacity>
-// //         </View>
-
-// //         {[[1,2,3,4,5],[6,7,8,9,0]].map(r=>
-// //           <View key={r[0]} style={st.padRow}>
-// //             {r.map(d=><TouchableOpacity key={d} style={st.key} activeOpacity={0.8} onPress={()=>onDigit(d)}><Text style={st.keyT}>{d}</Text></TouchableOpacity>)}
-// //           </View>)}
-// //       </Animated.View>
 // //     </View>}
+
+// //     {/* keyboard: numbers, letters, symbols. tap a key, then the tick */}
+// //     {kbOpen&&<Animated.View style={[st.kb,{width:kbW+16,transform:[{translateX:shake}]}]}>
+// //       <View style={st.kbTop}>
+// //         <TouchableOpacity style={[st.side,{backgroundColor:'#ffd35c'}]} activeOpacity={0.85} onPress={()=>{setKeypad(false);setTyped('')}}>
+// //           <Text style={st.sideT}>✕</Text>
+// //         </TouchableOpacity>
+// //         <View style={st.display}><Text style={st.displayT}>{typed}</Text></View>
+// //         <TouchableOpacity style={[st.side,{backgroundColor:'#b6ef63',opacity:typed?1:0.5}]} disabled={!typed} activeOpacity={0.85} onPress={submit}>
+// //           <Text style={st.sideT}>✓</Text>
+// //         </TouchableOpacity>
+// //       </View>
+
+// //       {KEY_ROWS.map((r,ri)=>
+// //         <View key={ri} style={[st.kbRow,{gap:GAP}]}>
+// //           {r.map(k=>{
+// //             const back=k===BACK;
+// //             return <TouchableOpacity key={k} activeOpacity={0.8} onPress={()=>onKey(k)}
+// //               style={[st.key,{width:kw,height:Math.max(36,kw+4)},back&&st.keyBack]}>
+// //               <Text style={[st.keyT,{fontSize:Math.max(15,Math.round(kw*0.5))}]}>{k}</Text>
+// //             </TouchableOpacity>;
+// //           })}
+// //         </View>)}
+// //     </Animated.View>}
 
 // //     {/* CLUES popup */}
 // //     {clueOpen&&<View style={st.overlay}>
@@ -351,15 +377,18 @@
 
 // //   overlay:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,0.45)',alignItems:'center',justifyContent:'center',zIndex:50},
 
-// //   padCard:{width:'86%',maxWidth:360,alignItems:'center',backgroundColor:'#f9efdf',borderColor:'#e8912e',borderWidth:6,borderRadius:28,paddingHorizontal:14,paddingTop:16,paddingBottom:14,gap:10},
-// //   padTitle:{fontFamily:FONT,fontSize:22,fontWeight:'900',color:THEME.navy},
-// //   padRow:{flexDirection:'row',alignItems:'center',gap:8},
+// //   // keyboard
+// //   kb:{position:'absolute',bottom:0,alignSelf:'center',alignItems:'center',backgroundColor:'#f9efdf',borderTopWidth:5,borderLeftWidth:5,borderRightWidth:5,borderColor:'#e8912e',
+// //     borderTopLeftRadius:26,borderTopRightRadius:26,paddingHorizontal:8,paddingTop:10,paddingBottom:14,gap:7,zIndex:50},
+// //   kbTop:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:10,marginBottom:2},
+// //   kbRow:{flexDirection:'row',justifyContent:'center'},
 // //   side:{width:42,height:42,borderRadius:21,borderWidth:2,borderColor:'#10245e',alignItems:'center',justifyContent:'center'},
 // //   sideT:{fontSize:20,fontWeight:'900',color:'#10245e'},
-// //   display:{width:130,height:54,borderRadius:27,borderWidth:2.5,borderColor:'#10245e',backgroundColor:'#fff',alignItems:'center',justifyContent:'center',marginHorizontal:4},
-// //   displayT:{fontFamily:FONT,fontSize:30,fontWeight:'900',color:'#10245e'},
-// //   key:{width:46,height:46,borderRadius:23,borderWidth:2.5,borderColor:'#10245e',backgroundColor:'#d9d9d9',alignItems:'center',justifyContent:'center'},
-// //   keyT:{fontFamily:FONT,fontSize:22,fontWeight:'900',color:'#10245e'},
+// //   display:{width:130,height:50,borderRadius:25,borderWidth:2.5,borderColor:'#10245e',backgroundColor:'#fff',alignItems:'center',justifyContent:'center'},
+// //   displayT:{fontFamily:FONT,fontSize:28,fontWeight:'900',color:'#10245e'},
+// //   key:{borderRadius:10,borderWidth:2,borderColor:'#10245e',backgroundColor:'#fdf6e6',alignItems:'center',justifyContent:'center'},
+// //   keyBack:{backgroundColor:'#ffd9d9'},
+// //   keyT:{fontFamily:FONT,fontWeight:'900',color:'#10245e'},
 
 // //   clueCard:{width:'86%',maxWidth:360,backgroundColor:'#f9efdf',borderColor:'#e8912e',borderWidth:6,borderRadius:28,paddingHorizontal:18,paddingTop:18,paddingBottom:10},
 // //   clueTitle:{fontFamily:FONT,fontSize:28,fontWeight:'900',color:THEME.navy,textAlign:'center',marginBottom:14},
@@ -387,7 +416,7 @@
 // //   back:{fontFamily:FONT,fontSize:16,color:THEME.navy,marginTop:14,textDecorationLine:'underline'},
 // // });
 // import React,{useCallback,useEffect,useRef,useState} from 'react';
-// import {View,Text,TextInput,TouchableOpacity,Animated,Platform,StyleSheet,ActivityIndicator,useWindowDimensions} from 'react-native';
+// import {View,Text,TouchableOpacity,Animated,Platform,StyleSheet,ActivityIndicator,useWindowDimensions} from 'react-native';
 // import {Stage,Coin} from './BTShared';
 // import {Icon} from './Art';
 // import {BigStar} from './Btlevel7art';
@@ -407,10 +436,29 @@
 
 // const clamp=(v:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,v));
 
+// // keyboard like level 2: numbers on top, then letters. no symbols.
+// const BACK='⌫';
+// const OK='✓';
+// const KEY_ROWS:string[][]=[
+//   '1234567890'.split(''),
+//   'QWERTYUIOP'.split(''),
+//   'ASDFGHJKL'.split(''),
+//   [...'ZXCVBNM'.split(''),BACK,OK],
+// ];
+// const MAX_LEN=3;
+// const GAP=6;
+// const PANEL_SPACE=134;                             // bottom panel (112) + its margin, the keys sit above it
+
 // export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComplete}:Props){
 //   const {width}=useWindowDimensions();
 //   const bw=Math.floor(clamp(width-48,240,380));   // board width
 //   const bh=Math.round(bw*0.62);                   // board height
+
+//   // keyboard key size: 10 keys per row
+//   const kbW=Math.min(width,420)-16;
+//   const kw=Math.floor((kbW-GAP*9)/10);
+//   const keyH=Math.max(36,kw+6);
+//   const kbH=keyH*KEY_ROWS.length+GAP*(KEY_ROWS.length-1);
 
 //   const [view,setView]=useState<Level27View|null>(null);
 //   const [loadErr,setLoadErr]=useState('');
@@ -430,7 +478,6 @@
 //   const busy=useRef(false);
 //   const timers=useRef<any[]>([]);
 //   const msgTimer=useRef<any>(null);
-//   const inputRef=useRef<TextInput>(null);
 //   const later=(fn:()=>void,ms:number)=>{timers.current.push(setTimeout(fn,ms))};
 
 //   const flash=(m:string)=>{
@@ -469,31 +516,19 @@
 //     if(result)Animated.spring(pop,{toValue:1,friction:5,tension:70,useNativeDriver:true}).start();
 //   },[result]);
 
-//   // open the answer box and pop up the system keyboard
-//   const openInput=()=>{
-//     if(done)return;
-//     setKeypad(true);setConfirmSkip(false);
-//     later(()=>inputRef.current?.focus(),150);
-//   };
-//   const closeInput=()=>{
-//     inputRef.current?.blur();
-//     setKeypad(false);setTyped('');
-//   };
-
-//   // 2. send the typed number; the backend checks it and saves the attempt
+//   // 2. send the typed key; the backend checks it and saves the attempt
 //   const submit=async()=>{
 //     if(!typed||busy.current||done||!view)return;
 //     busy.current=true;
 //     try{
-//       const r=await answerLevel27({sessionId:view.sessionId,playerId,answer:Number(typed)});
+//       const r=await answerLevel27({sessionId:view.sessionId,playerId,answer:typed as any});
 //       if(typeof r.hints==='number'&&setHints)setHints(r.hints);
 //       if(r.correct){
-//         inputRef.current?.blur();
 //         setSolved(typed);setKeypad(false);setDone(true);setConfirmSkip(false);
 //         later(()=>setResult(r),1300);
 //       }else{
 //         doShake();flash('Not quite. Try again!');
-//         later(()=>{setTyped('');inputRef.current?.focus()},600);
+//         later(()=>setTyped(''),600);
 //       }
 //     }catch(e:any){
 //       flash(e.message||'Network error');
@@ -550,8 +585,13 @@
 //     }finally{busy.current=false}
 //   };
 
-//   // only digits, max 3
-//   const onChangeText=(t:string)=>{if(!done)setTyped(t.replace(/[^0-9]/g,'').slice(0,3))};
+//   // keyboard press
+//   const onKey=(k:string)=>{
+//     if(done)return;
+//     if(k===BACK)setTyped(x=>x.slice(0,-1));
+//     else if(k===OK)submit();
+//     else setTyped(x=>(x+k).slice(0,MAX_LEN));
+//   };
 
 //   /* ---------- header ---------- */
 //   const header=(
@@ -598,12 +638,13 @@
 
 //   const digit=Math.round(bw*0.17);
 //   const qScale=pulse.interpolate({inputRange:[0,1],outputRange:[1,1.14]});
+//   const kbOpen=keypad&&!done;
 
 //   return <Stage bg="#bddaee"><View style={st.root}>
 //     <RoomBackground/>
 //     {header}
 
-//     <View style={st.center}>
+//     <View style={[st.center,kbOpen&&{paddingBottom:PANEL_SPACE+kbH+10}]}>
 //       {/* question pill */}
 //       <View style={st.qPill}>
 //         <Text style={st.qArrow}>{'<'}</Text>
@@ -618,10 +659,10 @@
 //             <View key={ri} style={st.row}>
 //               {row.map((v,ci)=>{
 //                 if(v!==null)return <View key={ci} style={st.cell}><ChalkDigit t={v} size={digit}/></View>;
-//                 // the missing number
+//                 // the missing one
 //                 const shown=solved||typed;
 //                 return <TouchableOpacity key={ci} style={st.cell} activeOpacity={0.8} disabled={done}
-//                   onPress={openInput}>
+//                   onPress={()=>{setKeypad(k=>!k);setConfirmSkip(false)}}>
 //                   <Animated.View style={{transform:[{scale:shown?1:qScale}]}}>
 //                     <ChalkDigit t={shown||'?'} size={digit} color={solved?'#ffe27a':shown?'#ffffff':'#1f2f78'}/>
 //                   </Animated.View>
@@ -631,10 +672,25 @@
 //         </Chalkboard>
 //       </Animated.View>
 
-//       {!done&&<Text style={st.tap}>Tap the ? to type your answer</Text>}
+//       {!done&&!kbOpen&&<Text style={st.tap}>Tap the ? to type your answer</Text>}
 //     </View>
 
-//     {/* bottom rounded panel */}
+//     {/* keyboard (like level 2): numbers on top, then letters. tap ✓ to check */}
+//     {kbOpen&&<View style={[st.kb,{bottom:PANEL_SPACE,gap:GAP}]}>
+//       {KEY_ROWS.map((r,ri)=>
+//         <View key={ri} style={[st.kbRow,{gap:GAP}]}>
+//           {r.map(k=>{
+//             const back=k===BACK,ok=k===OK;
+//             return <TouchableOpacity key={k} activeOpacity={0.8} onPress={()=>onKey(k)}
+//               disabled={ok&&!typed}
+//               style={[st.key,{width:kw,height:keyH},back&&st.keyBack,ok&&st.keyOk,ok&&!typed&&{opacity:0.5}]}>
+//               <Text style={[st.keyT,{fontSize:Math.max(15,Math.round(kw*0.55))}]}>{k}</Text>
+//             </TouchableOpacity>;
+//           })}
+//         </View>)}
+//     </View>}
+
+//     {/* bottom rounded panel (always visible) */}
 //     <View style={st.panel}>
 //       <View style={st.btnCol}>
 //         <TouchableOpacity style={st.ringGreen} activeOpacity={0.85} onPress={onHint}>
@@ -657,39 +713,6 @@
 //         <View style={st.badge}><Icon n="bulb" s={13}/><Text style={st.badgeT}>50</Text></View>
 //       </View>
 //     </View>
-
-//     {/* answer box: uses the SYSTEM keyboard. type the number, press Enter or the tick */}
-//     {keypad&&!done&&<View style={[st.overlay,st.overlayTop]}>
-//       <Animated.View style={[st.padCard,{transform:[{translateX:shake}]}]}>
-//         <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={closeInput}>
-//           <Text style={st.closeT}>✕</Text>
-//         </TouchableOpacity>
-//         <Text style={st.padTitle}>Your answer</Text>
-
-//         <View style={st.padRow}>
-//           <TouchableOpacity style={[st.side,{backgroundColor:'#e8523f'}]} onPress={()=>{setTyped('');inputRef.current?.focus()}}><Text style={st.sideT}>⌫</Text></TouchableOpacity>
-//           <TextInput
-//             ref={inputRef}
-//             style={st.input}
-//             value={typed}
-//             onChangeText={onChangeText}
-//             onSubmitEditing={submit}
-//             keyboardType="number-pad"
-//             inputMode="numeric"
-//             returnKeyType="done"
-//             maxLength={3}
-//             autoFocus
-//             blurOnSubmit={false}
-//             placeholder="?"
-//             placeholderTextColor="#9aa3c7"
-//             textAlign="center"
-//             // @ts-ignore web only: removes the focus outline
-//             underlineColorAndroid="transparent"
-//           />
-//           <TouchableOpacity style={[st.side,{backgroundColor:'#b6ef63',opacity:typed?1:0.5}]} disabled={!typed} onPress={submit}><Text style={st.sideT}>✓</Text></TouchableOpacity>
-//         </View>
-//       </Animated.View>
-//     </View>}
 
 //     {/* CLUES popup */}
 //     {clueOpen&&<View style={st.overlay}>
@@ -764,16 +787,15 @@
 //   badgeT:{fontFamily:FONT,fontSize:13,fontWeight:'900',color:'#fff'},
 
 //   overlay:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,0.45)',alignItems:'center',justifyContent:'center',zIndex:50},
-//   // answer box sits near the top so the system keyboard does not cover it
-//   overlayTop:{justifyContent:'flex-start',paddingTop:150},
 
-//   padCard:{width:'86%',maxWidth:360,alignItems:'center',backgroundColor:'#f9efdf',borderColor:'#e8912e',borderWidth:6,borderRadius:28,paddingHorizontal:14,paddingTop:16,paddingBottom:16,gap:12},
-//   padTitle:{fontFamily:FONT,fontSize:22,fontWeight:'900',color:THEME.navy},
-//   padRow:{flexDirection:'row',alignItems:'center',gap:8},
-//   side:{width:42,height:42,borderRadius:21,borderWidth:2,borderColor:'#10245e',alignItems:'center',justifyContent:'center'},
-//   sideT:{fontSize:20,fontWeight:'900',color:'#10245e'},
-//   input:{width:130,height:54,borderRadius:27,borderWidth:2.5,borderColor:'#10245e',backgroundColor:'#fff',marginHorizontal:4,
-//     fontFamily:FONT,fontSize:30,fontWeight:'900',color:'#10245e',paddingVertical:0,paddingHorizontal:8},
+//   // keyboard (level 2 style: loose cream keys above the bottom panel)
+//   kb:{position:'absolute',left:0,right:0,alignItems:'center',zIndex:40},
+//   kbRow:{flexDirection:'row',justifyContent:'center'},
+//   key:{borderRadius:10,borderWidth:2.5,borderColor:'#fff',backgroundColor:'#f6efd9',alignItems:'center',justifyContent:'center',
+//     elevation:3,shadowColor:'#000',shadowOpacity:0.18,shadowRadius:3,shadowOffset:{width:0,height:2}},
+//   keyBack:{backgroundColor:'#ffd9d9'},
+//   keyOk:{backgroundColor:'#b6ef63'},
+//   keyT:{fontFamily:FONT,fontWeight:'900',color:'#10245e'},
 
 //   clueCard:{width:'86%',maxWidth:360,backgroundColor:'#f9efdf',borderColor:'#e8912e',borderWidth:6,borderRadius:28,paddingHorizontal:18,paddingTop:18,paddingBottom:10},
 //   clueTitle:{fontFamily:FONT,fontSize:28,fontWeight:'900',color:THEME.navy,textAlign:'center',marginBottom:14},
@@ -821,16 +843,18 @@ type Props={
 
 const clamp=(v:number,lo:number,hi:number)=>Math.max(lo,Math.min(hi,v));
 
-// computer-style keyboard: numbers, letters, symbols
+// keyboard like level 2: numbers on top, then letters. no symbols.
 const BACK='⌫';
+const OK='✓';
 const KEY_ROWS:string[][]=[
   '1234567890'.split(''),
   'QWERTYUIOP'.split(''),
   'ASDFGHJKL'.split(''),
-  [...'ZXCVBNM'.split(''),BACK],
-  ['+','-','×','÷','=','(',')','.','!','?'],
+  [...'ZXCVBNM'.split(''),BACK,OK],
 ];
 const MAX_LEN=3;
+const GAP=6;
+const PANEL_SPACE=134;                             // bottom panel (112) + its margin, the keys sit above it
 
 export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComplete}:Props){
   const {width}=useWindowDimensions();
@@ -839,14 +863,15 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
 
   // keyboard key size: 10 keys per row
   const kbW=Math.min(width,420)-16;
-  const GAP=5;
-  const kw=Math.floor((kbW-GAP*9-16)/10);
+  const kw=Math.floor((kbW-GAP*9)/10);
+  const keyH=Math.max(36,kw+6);
+  const kbH=keyH*KEY_ROWS.length+GAP*(KEY_ROWS.length-1);
 
   const [view,setView]=useState<Level27View|null>(null);
   const [loadErr,setLoadErr]=useState('');
   const [msg,setMsg]=useState('');
   const [typed,setTyped]=useState('');
-  const [keypad,setKeypad]=useState(false);
+  const [keypad,setKeypad]=useState(true);          // keyboard is open from the start
   const [solved,setSolved]=useState('');
   const [done,setDone]=useState(false);
   const [result,setResult]=useState<Level27Result|null>(null);
@@ -874,7 +899,7 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
     setLoadErr('');setView(null);
     startLevel27(playerId)
       .then(v=>{
-        setView(v);setTyped('');setSolved('');setDone(false);setResult(null);setClues([]);
+        setView(v);setTyped('');setSolved('');setDone(false);setResult(null);setClues([]);setKeypad(true);
         if(setHints&&typeof v.hints==='number')setHints(v.hints);
       })
       .catch((e:any)=>setLoadErr(e.message||'Cannot reach the server'));
@@ -971,6 +996,7 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
   const onKey=(k:string)=>{
     if(done)return;
     if(k===BACK)setTyped(x=>x.slice(0,-1));
+    else if(k===OK)submit();
     else setTyped(x=>(x+k).slice(0,MAX_LEN));
   };
 
@@ -1025,7 +1051,7 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
     <RoomBackground/>
     {header}
 
-    <View style={[st.center,kbOpen&&{paddingBottom:300}]}>
+    <View style={[st.center,kbOpen&&{paddingBottom:PANEL_SPACE+kbH+10}]}>
       {/* question pill */}
       <View style={st.qPill}>
         <Text style={st.qArrow}>{'<'}</Text>
@@ -1042,22 +1068,35 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
                 if(v!==null)return <View key={ci} style={st.cell}><ChalkDigit t={v} size={digit}/></View>;
                 // the missing one
                 const shown=solved||typed;
-                return <TouchableOpacity key={ci} style={st.cell} activeOpacity={0.8} disabled={done}
-                  onPress={()=>{setKeypad(true);setConfirmSkip(false)}}>
+                return <View key={ci} style={st.cell}>
                   <Animated.View style={{transform:[{scale:shown?1:qScale}]}}>
                     <ChalkDigit t={shown||'?'} size={digit} color={solved?'#ffe27a':shown?'#ffffff':'#1f2f78'}/>
                   </Animated.View>
-                </TouchableOpacity>;
+                </View>;
               })}
             </View>)}
         </Chalkboard>
       </Animated.View>
 
-      {!done&&<Text style={st.tap}>Tap the ? to type your answer</Text>}
     </View>
 
-    {/* bottom rounded panel */}
-    {!kbOpen&&<View style={st.panel}>
+    {/* keyboard (like level 2): numbers on top, then letters. tap ✓ to check */}
+    {kbOpen&&<View style={[st.kb,{bottom:PANEL_SPACE,gap:GAP}]}>
+      {KEY_ROWS.map((r,ri)=>
+        <View key={ri} style={[st.kbRow,{gap:GAP}]}>
+          {r.map(k=>{
+            const back=k===BACK,ok=k===OK;
+            return <TouchableOpacity key={k} activeOpacity={0.8} onPress={()=>onKey(k)}
+              disabled={ok&&!typed}
+              style={[st.key,{width:kw,height:keyH},back&&st.keyBack,ok&&st.keyOk,ok&&!typed&&{opacity:0.5}]}>
+              <Text style={[st.keyT,{fontSize:Math.max(15,Math.round(kw*0.55))}]}>{k}</Text>
+            </TouchableOpacity>;
+          })}
+        </View>)}
+    </View>}
+
+    {/* bottom rounded panel (always visible) */}
+    <View style={st.panel}>
       <View style={st.btnCol}>
         <TouchableOpacity style={st.ringGreen} activeOpacity={0.85} onPress={onHint}>
           <View style={st.circleGreen}><Icon n="search" s={32}/></View>
@@ -1078,31 +1117,7 @@ export default function BTLevel27Screen({playerId,hints=0,setHints,onExit,onComp
         </TouchableOpacity>
         <View style={st.badge}><Icon n="bulb" s={13}/><Text style={st.badgeT}>50</Text></View>
       </View>
-    </View>}
-
-    {/* keyboard: numbers, letters, symbols. tap a key, then the tick */}
-    {kbOpen&&<Animated.View style={[st.kb,{width:kbW+16,transform:[{translateX:shake}]}]}>
-      <View style={st.kbTop}>
-        <TouchableOpacity style={[st.side,{backgroundColor:'#ffd35c'}]} activeOpacity={0.85} onPress={()=>{setKeypad(false);setTyped('')}}>
-          <Text style={st.sideT}>✕</Text>
-        </TouchableOpacity>
-        <View style={st.display}><Text style={st.displayT}>{typed}</Text></View>
-        <TouchableOpacity style={[st.side,{backgroundColor:'#b6ef63',opacity:typed?1:0.5}]} disabled={!typed} activeOpacity={0.85} onPress={submit}>
-          <Text style={st.sideT}>✓</Text>
-        </TouchableOpacity>
-      </View>
-
-      {KEY_ROWS.map((r,ri)=>
-        <View key={ri} style={[st.kbRow,{gap:GAP}]}>
-          {r.map(k=>{
-            const back=k===BACK;
-            return <TouchableOpacity key={k} activeOpacity={0.8} onPress={()=>onKey(k)}
-              style={[st.key,{width:kw,height:Math.max(36,kw+4)},back&&st.keyBack]}>
-              <Text style={[st.keyT,{fontSize:Math.max(15,Math.round(kw*0.5))}]}>{k}</Text>
-            </TouchableOpacity>;
-          })}
-        </View>)}
-    </Animated.View>}
+    </View>
 
     {/* CLUES popup */}
     {clueOpen&&<View style={st.overlay}>
@@ -1178,17 +1193,13 @@ const st=StyleSheet.create({
 
   overlay:{...StyleSheet.absoluteFillObject,backgroundColor:'rgba(0,0,0,0.45)',alignItems:'center',justifyContent:'center',zIndex:50},
 
-  // keyboard
-  kb:{position:'absolute',bottom:0,alignSelf:'center',alignItems:'center',backgroundColor:'#f9efdf',borderTopWidth:5,borderLeftWidth:5,borderRightWidth:5,borderColor:'#e8912e',
-    borderTopLeftRadius:26,borderTopRightRadius:26,paddingHorizontal:8,paddingTop:10,paddingBottom:14,gap:7,zIndex:50},
-  kbTop:{flexDirection:'row',alignItems:'center',justifyContent:'center',gap:10,marginBottom:2},
+  // keyboard (level 2 style: loose cream keys above the bottom panel)
+  kb:{position:'absolute',left:0,right:0,alignItems:'center',zIndex:40},
   kbRow:{flexDirection:'row',justifyContent:'center'},
-  side:{width:42,height:42,borderRadius:21,borderWidth:2,borderColor:'#10245e',alignItems:'center',justifyContent:'center'},
-  sideT:{fontSize:20,fontWeight:'900',color:'#10245e'},
-  display:{width:130,height:50,borderRadius:25,borderWidth:2.5,borderColor:'#10245e',backgroundColor:'#fff',alignItems:'center',justifyContent:'center'},
-  displayT:{fontFamily:FONT,fontSize:28,fontWeight:'900',color:'#10245e'},
-  key:{borderRadius:10,borderWidth:2,borderColor:'#10245e',backgroundColor:'#fdf6e6',alignItems:'center',justifyContent:'center'},
+  key:{borderRadius:10,borderWidth:2.5,borderColor:'#fff',backgroundColor:'#f6efd9',alignItems:'center',justifyContent:'center',
+    elevation:3,shadowColor:'#000',shadowOpacity:0.18,shadowRadius:3,shadowOffset:{width:0,height:2}},
   keyBack:{backgroundColor:'#ffd9d9'},
+  keyOk:{backgroundColor:'#b6ef63'},
   keyT:{fontFamily:FONT,fontWeight:'900',color:'#10245e'},
 
   clueCard:{width:'86%',maxWidth:360,backgroundColor:'#f9efdf',borderColor:'#e8912e',borderWidth:6,borderRadius:28,paddingHorizontal:18,paddingTop:18,paddingBottom:10},

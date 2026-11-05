@@ -1,366 +1,4 @@
-// // // import React from 'react';
-// // // import { View, Text, StyleSheet } from 'react-native';
 
-// // // function Wheel() {
-// // //   return (
-// // //     <View style={styles.wheel}>
-// // //       <View style={styles.wheelHub} />
-// // //     </View>
-// // //   );
-// // // }
-
-// // // function ThiefCar() {
-// // //   return (
-// // //     <View style={styles.carWrap}>
-// // //       <View style={[styles.roof, { backgroundColor: '#d62828' }]}>
-// // //         <View style={styles.window} />
-// // //         <View style={styles.window} />
-// // //       </View>
-// // //       <View style={[styles.body, { backgroundColor: '#e63946' }]}>
-// // //         <View style={styles.headlight} />
-// // //       </View>
-// // //       <View style={styles.wheelsRow}>
-// // //         <Wheel />
-// // //         <Wheel />
-// // //       </View>
-// // //     </View>
-// // //   );
-// // // }
-
-// // // function PoliceCar() {
-// // //   return (
-// // //     <View style={styles.carWrap}>
-// // //       <View style={styles.sirenRow}>
-// // //         <View style={[styles.siren, { backgroundColor: '#1d4ed8' }]} />
-// // //         <View style={[styles.siren, { backgroundColor: '#ef4444' }]} />
-// // //       </View>
-// // //       <View style={[styles.roof, { backgroundColor: '#1f2937' }]}>
-// // //         <View style={styles.window} />
-// // //         <View style={styles.window} />
-// // //       </View>
-// // //       <View style={[styles.body, { backgroundColor: '#111827' }]}>
-// // //         <View style={styles.policeDoor}>
-// // //           <Text style={styles.policeText}>POLICE</Text>
-// // //         </View>
-// // //         <View style={styles.headlight} />
-// // //       </View>
-// // //       <View style={styles.wheelsRow}>
-// // //         <Wheel />
-// // //         <Wheel />
-// // //       </View>
-// // //     </View>
-// // //   );
-// // // }
-
-// // // export default function Btlevel22art() {
-// // //   return (
-// // //     <View style={styles.scene}>
-// // //       {/* Info sign board */}
-// // //       <View style={styles.sign}>
-// // //         <View style={styles.signRow}>
-// // //           <Text style={styles.signEmoji}>🦹</Text>
-// // //           <View>
-// // //             <Text style={styles.signTime}>2:00 PM</Text>
-// // //             <Text style={styles.signSpeed}>60 km/h</Text>
-// // //           </View>
-// // //           <Text style={styles.signEmoji}>🚗</Text>
-// // //         </View>
-// // //         <View style={styles.signDivider} />
-// // //         <View style={styles.signRow}>
-// // //           <Text style={styles.signEmoji}>👮</Text>
-// // //           <View>
-// // //             <Text style={styles.signTime}>2:30 PM</Text>
-// // //             <Text style={styles.signSpeed}>75 km/h</Text>
-// // //           </View>
-// // //           <Text style={styles.signEmoji}>🚓</Text>
-// // //         </View>
-// // //       </View>
-
-// // //       {/* Road with both cars */}
-// // //       <View style={styles.road}>
-// // //         <View style={styles.cars}>
-// // //           <ThiefCar />
-// // //           <PoliceCar />
-// // //         </View>
-// // //         <View style={styles.laneLine} />
-// // //       </View>
-// // //     </View>
-// // //   );
-// // // }
-
-// // // const styles = StyleSheet.create({
-// // //   scene: {
-// // //     backgroundColor: '#8ecbf5',
-// // //     borderRadius: 20,
-// // //     overflow: 'hidden',
-// // //     marginBottom: 16,
-// // //     paddingTop: 12,
-// // //   },
-// // //   sign: {
-// // //     alignSelf: 'flex-end',
-// // //     marginRight: 12,
-// // //     backgroundColor: '#f3dcae',
-// // //     borderWidth: 3,
-// // //     borderColor: '#b07a3c',
-// // //     borderRadius: 10,
-// // //     paddingVertical: 6,
-// // //     paddingHorizontal: 10,
-// // //   },
-// // //   signRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-// // //   signEmoji: { fontSize: 24 },
-// // //   signTime: { fontWeight: 'bold', fontSize: 14, color: '#3a2a12' },
-// // //   signSpeed: { fontWeight: '600', fontSize: 14, color: '#3a2a12' },
-// // //   signDivider: { height: 1, backgroundColor: '#b07a3c', marginVertical: 4 },
-
-// // //   road: {
-// // //     marginTop: 16,
-// // //     backgroundColor: '#5b6470',
-// // //     paddingTop: 20,
-// // //     paddingBottom: 14,
-// // //   },
-// // //   cars: {
-// // //     flexDirection: 'row',
-// // //     justifyContent: 'space-around',
-// // //     alignItems: 'flex-end',
-// // //   },
-// // //   laneLine: {
-// // //     height: 4,
-// // //     backgroundColor: '#ffffff',
-// // //     marginTop: 12,
-// // //     marginHorizontal: 30,
-// // //     borderRadius: 2,
-// // //   },
-
-// // //   carWrap: { alignItems: 'center' },
-// // //   roof: {
-// // //     width: 62,
-// // //     height: 24,
-// // //     borderTopLeftRadius: 16,
-// // //     borderTopRightRadius: 16,
-// // //     flexDirection: 'row',
-// // //     justifyContent: 'space-evenly',
-// // //     alignItems: 'center',
-// // //   },
-// // //   window: { width: 22, height: 14, backgroundColor: '#bfe3f7', borderRadius: 4 },
-// // //   body: {
-// // //     width: 100,
-// // //     height: 32,
-// // //     borderRadius: 10,
-// // //     justifyContent: 'center',
-// // //   },
-// // //   headlight: {
-// // //     position: 'absolute',
-// // //     right: 6,
-// // //     top: 8,
-// // //     width: 14,
-// // //     height: 10,
-// // //     borderRadius: 5,
-// // //     backgroundColor: '#ffe66d',
-// // //   },
-// // //   policeDoor: {
-// // //     alignSelf: 'center',
-// // //     backgroundColor: '#fff',
-// // //     paddingHorizontal: 4,
-// // //     borderRadius: 3,
-// // //   },
-// // //   policeText: { fontSize: 9, fontWeight: '900', color: '#111827' },
-// // //   sirenRow: { flexDirection: 'row', gap: 2, marginBottom: -2 },
-// // //   siren: { width: 20, height: 8, borderRadius: 3 },
-
-// // //   wheelsRow: {
-// // //     width: 88,
-// // //     flexDirection: 'row',
-// // //     justifyContent: 'space-between',
-// // //     marginTop: -10,
-// // //   },
-// // //   wheel: {
-// // //     width: 24,
-// // //     height: 24,
-// // //     borderRadius: 12,
-// // //     backgroundColor: '#1b1b1b',
-// // //     alignItems: 'center',
-// // //     justifyContent: 'center',
-// // //   },
-// // //   wheelHub: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#c8ccd2' },
-// // // });
-// // import React from 'react';
-// // import { View, Text, StyleSheet } from 'react-native';
-
-// // function Wheel() {
-// //   return (
-// //     <View style={styles.wheel}>
-// //       <View style={styles.wheelHub} />
-// //     </View>
-// //   );
-// // }
-
-// // function ThiefCar() {
-// //   return (
-// //     <View style={styles.carWrap}>
-// //       <View style={[styles.roof, { backgroundColor: '#d62828' }]}>
-// //         <View style={styles.window} />
-// //         <View style={styles.window} />
-// //       </View>
-// //       <View style={[styles.body, { backgroundColor: '#e63946' }]}>
-// //         <View style={styles.headlight} />
-// //       </View>
-// //       <View style={styles.wheelsRow}>
-// //         <Wheel />
-// //         <Wheel />
-// //       </View>
-// //     </View>
-// //   );
-// // }
-
-// // function PoliceCar() {
-// //   return (
-// //     <View style={styles.carWrap}>
-// //       <View style={styles.sirenRow}>
-// //         <View style={[styles.siren, { backgroundColor: '#1d4ed8' }]} />
-// //         <View style={[styles.siren, { backgroundColor: '#ef4444' }]} />
-// //       </View>
-// //       <View style={[styles.roof, { backgroundColor: '#1f2937' }]}>
-// //         <View style={styles.window} />
-// //         <View style={styles.window} />
-// //       </View>
-// //       <View style={[styles.body, { backgroundColor: '#111827' }]}>
-// //         <View style={styles.policeDoor}>
-// //           <Text style={styles.policeText}>POLICE</Text>
-// //         </View>
-// //         <View style={styles.headlight} />
-// //       </View>
-// //       <View style={styles.wheelsRow}>
-// //         <Wheel />
-// //         <Wheel />
-// //       </View>
-// //     </View>
-// //   );
-// // }
-
-// // export default function Btlevel22art() {
-// //   return (
-// //     <View style={styles.scene}>
-// //       <View style={styles.sign}>
-// //         <View style={styles.signRow}>
-// //           <Text style={styles.signEmoji}>🦹</Text>
-// //           <View>
-// //             <Text style={styles.signTime}>2:00 PM</Text>
-// //             <Text style={styles.signSpeed}>60 km/h</Text>
-// //           </View>
-// //           <Text style={styles.signEmoji}>🚗</Text>
-// //         </View>
-// //         <View style={styles.signDivider} />
-// //         <View style={styles.signRow}>
-// //           <Text style={styles.signEmoji}>👮</Text>
-// //           <View>
-// //             <Text style={styles.signTime}>2:30 PM</Text>
-// //             <Text style={styles.signSpeed}>75 km/h</Text>
-// //           </View>
-// //           <Text style={styles.signEmoji}>🚓</Text>
-// //         </View>
-// //       </View>
-
-// //       <View style={styles.road}>
-// //         <View style={styles.cars}>
-// //           <ThiefCar />
-// //           <PoliceCar />
-// //         </View>
-// //         <View style={styles.laneLine} />
-// //       </View>
-// //     </View>
-// //   );
-// // }
-
-// // const styles = StyleSheet.create({
-// //   scene: {
-// //     backgroundColor: '#8ecbf5',
-// //     borderRadius: 20,
-// //     overflow: 'hidden',
-// //     marginBottom: 16,
-// //     paddingTop: 12,
-// //   },
-// //   sign: {
-// //     alignSelf: 'flex-end',
-// //     marginRight: 12,
-// //     backgroundColor: '#f3dcae',
-// //     borderWidth: 3,
-// //     borderColor: '#b07a3c',
-// //     borderRadius: 10,
-// //     paddingVertical: 6,
-// //     paddingHorizontal: 10,
-// //   },
-// //   signRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-// //   signEmoji: { fontSize: 24 },
-// //   signTime: { fontWeight: 'bold', fontSize: 14, color: '#3a2a12' },
-// //   signSpeed: { fontWeight: '600', fontSize: 14, color: '#3a2a12' },
-// //   signDivider: { height: 1, backgroundColor: '#b07a3c', marginVertical: 4 },
-
-// //   road: {
-// //     marginTop: 16,
-// //     backgroundColor: '#5b6470',
-// //     paddingTop: 20,
-// //     paddingBottom: 14,
-// //   },
-// //   cars: {
-// //     flexDirection: 'row',
-// //     justifyContent: 'space-around',
-// //     alignItems: 'flex-end',
-// //   },
-// //   laneLine: {
-// //     height: 4,
-// //     backgroundColor: '#ffffff',
-// //     marginTop: 12,
-// //     marginHorizontal: 30,
-// //     borderRadius: 2,
-// //   },
-
-// //   carWrap: { alignItems: 'center' },
-// //   roof: {
-// //     width: 62,
-// //     height: 24,
-// //     borderTopLeftRadius: 16,
-// //     borderTopRightRadius: 16,
-// //     flexDirection: 'row',
-// //     justifyContent: 'space-evenly',
-// //     alignItems: 'center',
-// //   },
-// //   window: { width: 22, height: 14, backgroundColor: '#bfe3f7', borderRadius: 4 },
-// //   body: { width: 100, height: 32, borderRadius: 10, justifyContent: 'center' },
-// //   headlight: {
-// //     position: 'absolute',
-// //     right: 6,
-// //     top: 8,
-// //     width: 14,
-// //     height: 10,
-// //     borderRadius: 5,
-// //     backgroundColor: '#ffe66d',
-// //   },
-// //   policeDoor: {
-// //     alignSelf: 'center',
-// //     backgroundColor: '#fff',
-// //     paddingHorizontal: 4,
-// //     borderRadius: 3,
-// //   },
-// //   policeText: { fontSize: 9, fontWeight: '900', color: '#111827' },
-// //   sirenRow: { flexDirection: 'row', gap: 2, marginBottom: -2 },
-// //   siren: { width: 20, height: 8, borderRadius: 3 },
-
-// //   wheelsRow: {
-// //     width: 88,
-// //     flexDirection: 'row',
-// //     justifyContent: 'space-between',
-// //     marginTop: -10,
-// //   },
-// //   wheel: {
-// //     width: 24,
-// //     height: 24,
-// //     borderRadius: 12,
-// //     backgroundColor: '#1b1b1b',
-// //     alignItems: 'center',
-// //     justifyContent: 'center',
-// //   },
-// //   wheelHub: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#c8ccd2' },
-// // });
 // import React, { useEffect, useRef } from 'react';
 // import { View, Text, Animated, PanResponder, StyleSheet, Easing } from 'react-native';
 // import Svg, { Rect, Path, Polygon, Line } from 'react-native-svg';
@@ -648,19 +286,19 @@
 //     borderWidth: 3,
 //     borderColor: '#b07a3c',
 //     borderRadius: 10,
-//     paddingVertical: 4,
+//     paddingVertical: 2,
 //     paddingHorizontal: 8,
-//     marginBottom: 6,
+//     marginBottom: 4,
 //   },
 //   signRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-//   signEmoji: { fontSize: 20 },
-//   signTime: { fontWeight: 'bold', fontSize: 13, color: '#3a2a12' },
-//   signSpeed: { fontWeight: '600', fontSize: 13, color: '#3a2a12' },
-//   signDivider: { height: 1, backgroundColor: '#b07a3c', marginVertical: 3 },
+//   signEmoji: { fontSize: 16 },
+//   signTime: { fontWeight: 'bold', fontSize: 12, color: '#3a2a12' },
+//   signSpeed: { fontWeight: '600', fontSize: 12, color: '#3a2a12' },
+//   signDivider: { height: 1, backgroundColor: '#b07a3c', marginVertical: 2 },
 
-//   road: { backgroundColor: '#5b6470', borderRadius: 18, paddingTop: 14, paddingBottom: 10 },
+//   road: { backgroundColor: '#5b6470', borderRadius: 18, paddingTop: 8, paddingBottom: 8 },
 //   cars: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
-//   laneLine: { height: 4, backgroundColor: '#fff', marginTop: 8, marginHorizontal: 24, borderRadius: 2 },
+//   laneLine: { height: 4, backgroundColor: '#fff', marginTop: 6, marginHorizontal: 24, borderRadius: 2 },
 
 //   carWrap: { alignItems: 'center' },
 //   roof: {
@@ -678,9 +316,9 @@
 //   wheel: { width: 21, height: 21, borderRadius: 11, backgroundColor: '#1b1b1b', alignItems: 'center', justifyContent: 'center' },
 //   wheelHub: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#c8ccd2' },
 // });
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Animated, PanResponder, StyleSheet, Easing } from 'react-native';
-import Svg, { Rect, Path, Polygon, Line } from 'react-native-svg';
+import Svg, { Rect, Path, Polygon, Line, Circle, Ellipse } from 'react-native-svg';
 
 /* ======================= cozy room background ======================= */
 const yoyo = (v: Animated.Value, ms: number) =>
@@ -825,7 +463,7 @@ export function Level22Room() {
   );
 }
 
-/* ======================= draggable eraser + pencil ======================= */
+/* ======================= small drawings (kept from before) ======================= */
 export const Eraser = ({ w }: { w: number }) => (
   <Svg width={w} height={w * 0.62} viewBox="0 0 100 62">
     <Rect x="4" y="8" width="92" height="46" rx="12" fill="#f4f4f0" stroke="#d9d9d4" strokeWidth="2" />
@@ -869,129 +507,239 @@ export function FreeDrag({ children }: any) {
   );
 }
 
-/* ======================= road scene (cars + sign board) ======================= */
-function Wheel() {
-  return (
-    <View style={s.wheel}>
-      <View style={s.wheelHub} />
-    </View>
+/* ======================= level 22: apples, kids and the plate ======================= */
+
+const Apple = ({ w }: { w: number }) => (
+  <Svg width={w} height={w} viewBox="0 0 60 60">
+    <Path
+      d="M30 16 C22 8 6 12 6 32 C6 48 18 58 30 54 C42 58 54 48 54 32 C54 12 38 8 30 16Z"
+      fill="#e8222b" stroke="#a31219" strokeWidth="2"
+    />
+    <Path d="M30 16 C30 10 32 6 36 3" stroke="#6b4423" strokeWidth="3" fill="none" strokeLinecap="round" />
+    <Path d="M34 8 C40 2 48 4 50 8 C44 12 38 12 34 8Z" fill="#5fae3a" />
+    <Path d="M14 24 Q16 16 22 14" stroke="#ff8a8a" strokeWidth="3" fill="none" strokeLinecap="round" />
+  </Svg>
+);
+
+const Bowl = ({ w }: { w: number }) => (
+  <Svg width={w} height={w * 0.25} viewBox="0 0 200 50">
+    <Path d="M0 10 Q100 -6 200 10 Q196 46 100 48 Q4 46 0 10Z" fill="#3b3b42" />
+    <Ellipse cx="100" cy="10" rx="100" ry="8" fill="#56565e" />
+  </Svg>
+);
+
+// kind: 0 = blonde girl (left), 1 = boy in the middle, 2 = curly boy (right)
+const Kid = ({ kind }: { kind: number }) => {
+  const eyes = (
+    <>
+      <Circle cx="40" cy="58" r="2.8" fill="#222" />
+      <Circle cx="60" cy="58" r="2.8" fill="#222" />
+    </>
   );
-}
-
-function ThiefCar() {
-  return (
-    <View style={s.carWrap}>
-      <View style={[s.roof, { backgroundColor: '#d62828' }]}>
-        <View style={s.window} />
-        <View style={s.window} />
-      </View>
-      <View style={[s.body, { backgroundColor: '#e63946' }]}>
-        <View style={s.headlight} />
-      </View>
-      <View style={s.wheelsRow}>
-        <Wheel />
-        <Wheel />
-      </View>
-    </View>
+  const smile = <Path d="M40 68 Q50 77 60 68" stroke="#222" strokeWidth="2.5" fill="none" strokeLinecap="round" />;
+  const cheeks = (
+    <>
+      <Circle cx="34" cy="66" r="4" fill="#f58a8a" opacity={0.55} />
+      <Circle cx="66" cy="66" r="4" fill="#f58a8a" opacity={0.55} />
+    </>
   );
-}
-
-function PoliceCar() {
   return (
-    <View style={s.carWrap}>
-      <View style={s.sirenRow}>
-        <View style={[s.siren, { backgroundColor: '#1d4ed8' }]} />
-        <View style={[s.siren, { backgroundColor: '#ef4444' }]} />
-      </View>
-      <View style={[s.roof, { backgroundColor: '#1f2937' }]}>
-        <View style={s.window} />
-        <View style={s.window} />
-      </View>
-      <View style={[s.body, { backgroundColor: '#111827' }]}>
-        <View style={s.policeDoor}>
-          <Text style={s.policeText}>POLICE</Text>
-        </View>
-        <View style={s.headlight} />
-      </View>
-      <View style={s.wheelsRow}>
-        <Wheel />
-        <Wheel />
-      </View>
-    </View>
+    <Svg width={100} height={150} viewBox="0 0 100 150">
+      {kind === 0 && (
+        <>
+          <Circle cx="50" cy="50" r="38" fill="#ffd21f" />
+          <Path d="M16 160 Q16 100 50 94 Q84 100 84 160Z" fill="#6b3a9a" />
+          <Path d="M40 94 L50 108 L60 94Z" fill="#2f7fd0" />
+          <Circle cx="50" cy="58" r="26" fill="#f6b894" />
+          <Path d="M24 52 Q28 22 52 24 Q74 24 76 52 Q62 38 50 40 Q36 38 24 52Z" fill="#ffd21f" />
+          {eyes}{smile}{cheeks}
+        </>
+      )}
+      {kind === 1 && (
+        <>
+          <Path d="M16 160 Q16 100 50 94 Q84 100 84 160Z" fill="#2f6fc9" />
+          <Path d="M36 112 H64" stroke="#ffd21f" strokeWidth="4" strokeLinecap="round" />
+          <Circle cx="50" cy="58" r="26" fill="#f6b894" />
+          <Path d="M22 54 Q22 24 50 24 Q78 24 78 54 Q70 38 50 38 Q30 38 22 54Z" fill="#8a5a2b" />
+          {eyes}{smile}{cheeks}
+        </>
+      )}
+      {kind === 2 && (
+        <>
+          <Circle cx="26" cy="46" r="13" fill="#f39a1f" />
+          <Circle cx="38" cy="30" r="14" fill="#f39a1f" />
+          <Circle cx="54" cy="26" r="14" fill="#f39a1f" />
+          <Circle cx="69" cy="34" r="14" fill="#f39a1f" />
+          <Circle cx="76" cy="50" r="12" fill="#f39a1f" />
+          <Rect x="18" y="94" width="64" height="80" rx="24" fill="#f0c36a" />
+          {[108, 120, 132, 144].map((y) => (
+            <Line key={y} x1="20" y1={y} x2="80" y2={y} stroke="#b8782a" strokeWidth="5" />
+          ))}
+          <Circle cx="50" cy="60" r="25" fill="#f6b894" />
+          <Path d="M28 46 Q50 34 72 46 Q60 40 50 41 Q38 40 28 46Z" fill="#f39a1f" />
+          <Circle cx="40" cy="58" r="2.8" fill="#222" />
+          <Circle cx="60" cy="58" r="2.8" fill="#222" />
+          <Path d="M40 67 Q50 82 60 67Z" fill="#c0242b" />
+          {cheeks}
+        </>
+      )}
+    </Svg>
   );
-}
+};
 
-export function RoadScene() {
+/* layout of the playing card (all numbers are pixels inside the card) */
+const SW = 320;                       // card width
+const SH = 305;                       // card height
+const COLW = SW / 3;                  // one column per kid
+const KID_W = 100;
+const KID_TOP = 8;
+const KID_BOTTOM = 190;               // dropping above this line = giving to a kid
+const PL_L = 60, PL_T = 215, PL_W = 200, PL_H = 90;
+const PL_CX = PL_L + PL_W / 2;        // plate centre
+const PL_CY = PL_T + PL_H / 2;
+const APPLE_W = 56;
+const SLOT_X = [36, 100, 164];        // apple centres inside the plate
+const APPLE_CY = PL_T + APPLE_W / 2;
+const KID_PLATE_Y = 140;              // where the plate lands when it is given to a kid
+
+/*
+  ApplesGame
+  - drag a loose apple onto a kid  -> move "apple:K"
+  - drag the plate (with its apples) onto a kid -> move "plate:K"
+  The game only records the moves; the server decides if they are right.
+  onFinish is called once: when the plate was given away or when the plate has no apples left.
+*/
+export function ApplesGame({ onFinish }: { onFinish: (moves: string[]) => void }) {
+  const finishRef = useRef(onFinish);
+  finishRef.current = onFinish;
+
+  const [onPlate, setOnPlate] = useState([true, true, true]);
+  const [kidHas, setKidHas] = useState([false, false, false]);
+  const [dragIdx, setDragIdx] = useState(-1);
+
+  const onPlateRef = useRef([true, true, true]);
+  const lock = useRef(false);
+  const moves = useRef<string[]>([]);
+  const timers = useRef<any[]>([]);
+
+  const plateXY = useRef(new Animated.ValueXY()).current;
+  const plateS = useRef(new Animated.Value(1)).current;
+  const appleXY = useRef([0, 1, 2].map(() => new Animated.ValueXY())).current;
+
+  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+
+  const kidAt = (cx: number, cy: number) =>
+    cy < KID_BOTTOM && cx >= 0 && cx < SW ? Math.min(2, Math.floor(cx / COLW)) : -1;
+
+  const back = (v: Animated.ValueXY) =>
+    Animated.spring(v, { toValue: { x: 0, y: 0 }, friction: 6, useNativeDriver: false }).start();
+
+  const finishSoon = (ms: number) => {
+    lock.current = true;
+    timers.current.push(setTimeout(() => finishRef.current(moves.current.slice()), ms));
+  };
+
+  const dropApple = (i: number, dx: number, dy: number) => {
+    setDragIdx(-1);
+    const kid = kidAt(PL_L + SLOT_X[i] + dx, APPLE_CY + dy);
+    if (kid < 0) { back(appleXY[i]); return; }
+    moves.current.push('apple:' + kid);
+    onPlateRef.current[i] = false;
+    setOnPlate(onPlateRef.current.slice());
+    setKidHas((p) => { const n = p.slice(); n[kid] = true; return n; });
+    appleXY[i].setValue({ x: 0, y: 0 });
+    if (!onPlateRef.current.some(Boolean)) finishSoon(450);   // the plate is empty now
+  };
+
+  const dropPlate = (dx: number, dy: number) => {
+    const kid = kidAt(PL_CX + dx, PL_CY + dy);
+    if (kid < 0) { back(plateXY); return; }
+    moves.current.push('plate:' + kid);
+    lock.current = true;
+    const kx = kid * COLW + COLW / 2;
+    Animated.parallel([
+      Animated.spring(plateXY, { toValue: { x: kx - PL_CX, y: KID_PLATE_Y - PL_CY }, friction: 7, useNativeDriver: false }),
+      Animated.timing(plateS, { toValue: 0.5, duration: 260, useNativeDriver: false }),
+    ]).start();
+    finishSoon(700);
+  };
+
+  const applePans = useRef(
+    [0, 1, 2].map((i) =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !lock.current && onPlateRef.current[i],
+        onPanResponderTerminationRequest: () => false,
+        onPanResponderGrant: () => setDragIdx(i),
+        onPanResponderMove: Animated.event([null, { dx: appleXY[i].x, dy: appleXY[i].y }], { useNativeDriver: false }) as any,
+        onPanResponderRelease: (_e, g) => dropApple(i, g.dx, g.dy),
+        onPanResponderTerminate: () => { setDragIdx(-1); back(appleXY[i]); },
+      })
+    )
+  ).current;
+
+  const platePan = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => !lock.current,
+      onPanResponderTerminationRequest: () => false,
+      onPanResponderMove: Animated.event([null, { dx: plateXY.x, dy: plateXY.y }], { useNativeDriver: false }) as any,
+      onPanResponderRelease: (_e, g) => { if (!lock.current) dropPlate(g.dx, g.dy); },
+      onPanResponderTerminate: () => { if (!lock.current) back(plateXY); },
+    })
+  ).current;
+
   return (
-    <View style={s.scene}>
-      <View style={s.sign}>
-        <View style={s.signRow}>
-          <Text style={s.signEmoji}>🦹</Text>
-          <View>
-            <Text style={s.signTime}>2:00 PM</Text>
-            <Text style={s.signSpeed}>60 km/h</Text>
-          </View>
-          <Text style={s.signEmoji}>🚗</Text>
-        </View>
-        <View style={s.signDivider} />
-        <View style={s.signRow}>
-          <Text style={s.signEmoji}>👮</Text>
-          <View>
-            <Text style={s.signTime}>2:30 PM</Text>
-            <Text style={s.signSpeed}>75 km/h</Text>
-          </View>
-          <Text style={s.signEmoji}>🚓</Text>
-        </View>
+    <View style={{ width: SW, height: SH }}>
+      {/* notebook card */}
+      <View style={[StyleSheet.absoluteFill, s.card]} pointerEvents="none">
+        {[40, 72, 104, 136, 168, 200, 232, 264].map((y) => (
+          <View key={y} style={{ position: 'absolute', left: 0, right: 0, top: y, height: 1.5, backgroundColor: 'rgba(120,170,215,0.28)' }} />
+        ))}
       </View>
 
-      <View style={s.road}>
-        <View style={s.cars}>
-          <ThiefCar />
-          <PoliceCar />
+      {/* the three kids */}
+      {[0, 1, 2].map((k) => (
+        <View key={k} pointerEvents="none" style={{ position: 'absolute', left: k * COLW + (COLW - KID_W) / 2, top: KID_TOP }}>
+          <Kid kind={k} />
+          {kidHas[k] && (
+            <View style={{ position: 'absolute', left: 34, top: 98 }}>
+              <Apple w={32} />
+            </View>
+          )}
         </View>
-        <View style={s.laneLine} />
-      </View>
+      ))}
+
+      {/* the plate with its apples (drag the bowl to move everything) */}
+      <Animated.View
+        {...platePan.panHandlers}
+        style={{
+          position: 'absolute', left: PL_L, top: PL_T, width: PL_W, height: PL_H, zIndex: 10,
+          transform: [{ translateX: plateXY.x }, { translateY: plateXY.y }, { scale: plateS }],
+        }}
+      >
+        {[0, 1, 2].map((i) =>
+          onPlate[i] ? (
+            <Animated.View
+              key={i}
+              {...applePans[i].panHandlers}
+              style={{
+                position: 'absolute', left: SLOT_X[i] - APPLE_W / 2, top: 0,
+                zIndex: dragIdx === i ? 20 : 1,
+                transform: [{ translateX: appleXY[i].x }, { translateY: appleXY[i].y }],
+              }}
+            >
+              <Apple w={APPLE_W} />
+            </Animated.View>
+          ) : null
+        )}
+        <View pointerEvents="none" style={{ position: 'absolute', left: 0, top: 36, zIndex: 5 }}>
+          <Bowl w={PL_W} />
+        </View>
+      </Animated.View>
     </View>
   );
 }
 
 const s = StyleSheet.create({
   eye: { width: 4, height: 4, borderRadius: 2, backgroundColor: '#5b3a29' },
-
-  scene: { width: '100%', paddingHorizontal: 14 },
-  sign: {
-    alignSelf: 'flex-end',
-    backgroundColor: '#f3dcae',
-    borderWidth: 3,
-    borderColor: '#b07a3c',
-    borderRadius: 10,
-    paddingVertical: 2,
-    paddingHorizontal: 8,
-    marginBottom: 4,
-  },
-  signRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  signEmoji: { fontSize: 16 },
-  signTime: { fontWeight: 'bold', fontSize: 12, color: '#3a2a12' },
-  signSpeed: { fontWeight: '600', fontSize: 12, color: '#3a2a12' },
-  signDivider: { height: 1, backgroundColor: '#b07a3c', marginVertical: 2 },
-
-  road: { backgroundColor: '#5b6470', borderRadius: 18, paddingTop: 8, paddingBottom: 8 },
-  cars: { flexDirection: 'row', justifyContent: 'space-around', alignItems: 'flex-end' },
-  laneLine: { height: 4, backgroundColor: '#fff', marginTop: 6, marginHorizontal: 24, borderRadius: 2 },
-
-  carWrap: { alignItems: 'center' },
-  roof: {
-    width: 52, height: 20, borderTopLeftRadius: 14, borderTopRightRadius: 14,
-    flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center',
-  },
-  window: { width: 18, height: 12, backgroundColor: '#bfe3f7', borderRadius: 3 },
-  body: { width: 86, height: 28, borderRadius: 9, justifyContent: 'center' },
-  headlight: { position: 'absolute', right: 5, top: 7, width: 12, height: 9, borderRadius: 4, backgroundColor: '#ffe66d' },
-  policeDoor: { alignSelf: 'center', backgroundColor: '#fff', paddingHorizontal: 4, borderRadius: 3 },
-  policeText: { fontSize: 8, fontWeight: '900', color: '#111827' },
-  sirenRow: { flexDirection: 'row', gap: 2, marginBottom: -2 },
-  siren: { width: 17, height: 7, borderRadius: 3 },
-  wheelsRow: { width: 74, flexDirection: 'row', justifyContent: 'space-between', marginTop: -9 },
-  wheel: { width: 21, height: 21, borderRadius: 11, backgroundColor: '#1b1b1b', alignItems: 'center', justifyContent: 'center' },
-  wheelHub: { width: 9, height: 9, borderRadius: 5, backgroundColor: '#c8ccd2' },
+  card: { backgroundColor: 'rgba(251,246,233,0.94)', borderRadius: 22, overflow: 'hidden', borderWidth: 3, borderColor: '#fff' },
 });

@@ -4,9 +4,11 @@
 
 // // const r = express.Router();
 
-// // const HINT_COST = 25;
 // // const SKIP_COST = 50;
 // // const REWARD_HINTS = 75;
+
+// // // the clue is free (no hints are spent)
+// // const CLUE_TEXT = "Sometimes, the best excuse is the one that sounds too perfect. Look for something that doesn't add up.";
 
 // // /* ---------- HELPERS ---------- */
 
@@ -155,29 +157,25 @@
 // // }));
 
 // // /* ---------------------------------------------------------
-// //    POST /level16/hint      body: { sessionId, playerId }     costs 25 hints
+// //    POST /level16/hint      body: { sessionId, playerId }     FREE
+// //    shows the clue directly, no hints are spent
 // // --------------------------------------------------------- */
 
 // // r.post('/hint', handle(async (req, res) => {
+// //   console.log('NEW L16 HINT ROUTE');
 // //   const ctx = await loadSession(req, res);
 // //   if (!ctx) return;
 // //   const { session, playerId } = ctx;
-
-// //   const left = await l16.spendHints(playerId, HINT_COST);
-// //   if (left === null) {
-// //     return bad(res, 402, 'not_enough_hints', `You need ${HINT_COST} hints`);
-// //   }
-
-// //   const text = l16.HINTS[Math.min(Number(session.hints_used), l16.HINTS.length - 1)];
 
 // //   await l16.markHintUsed(session.id);
 // //   await l16.recordAction(session.id, 'hint', String(Number(session.hints_used) + 1), false);
 
 // //   res.json({
 // //     success: true,
-// //     hints: left,
-// //     hint: { text },
+// //     hints: await l16.getHints(playerId),
+// //     hint: { text: CLUE_TEXT },
 // //     hintsUsed: Number(session.hints_used) + 1,
+// //     cost: 0,
 // //   });
 // // }));
 
@@ -250,9 +248,6 @@
 // const SKIP_COST = 50;
 // const REWARD_HINTS = 75;
 
-// // the clue is free (no hints are spent)
-// const CLUE_TEXT = "Sometimes, the best excuse is the one that sounds too perfect. Look for something that doesn't add up.";
-
 // /* ---------- HELPERS ---------- */
 
 // const handle = (fn) => async (req, res) => {
@@ -319,19 +314,24 @@
 //   let session = await l16.getActiveSession(playerId);
 //   if (!session) session = await l16.createSession(playerId);
 
+//   const hintsUsed = Number(session.hints_used);
+
 //   res.json({
 //     success: true,
 //     sessionId: session.id,
 //     level: l16.LEVEL_DATA,
 //     status: session.status,
-//     hintsUsed: Number(session.hints_used),
+//     hintsUsed,
 //     wrongAttempts: Number(session.wrong_attempts),
 //     hints: Number(player.hints) || 0,
+//     // clues the player already bought in this session
+//     clues: l16.HINTS.slice(0, Math.min(hintsUsed, l16.HINTS.length)),
 //   });
 // }));
 
 // /* ---------------------------------------------------------
-//    POST /level16/answer    body: { sessionId, playerId, choice }
+//    POST /level16/answer
+//    body: { sessionId, playerId, placements: { red:'f1', green:'f2', cyan:'f3' } }
 // --------------------------------------------------------- */
 
 // r.post('/answer', handle(async (req, res) => {
@@ -339,16 +339,16 @@
 //   if (!ctx) return;
 //   const { session, playerId } = ctx;
 
-//   const choice = String(req.body?.choice || '').toUpperCase().trim();
-//   if (!l16.LEVEL_DATA.options.includes(choice)) {
-//     return bad(res, 400, 'invalid_choice', 'Choice must be A, B, C or D');
+//   const placements = req.body?.placements;
+//   if (!l16.isValidPlacements(placements)) {
+//     return bad(res, 400, 'invalid_placements', 'Put every object in a different frame');
 //   }
 
 //   const wrongBefore = Number(session.wrong_attempts);
 //   const attemptsBefore = Number(session.total_attempts);
-//   const correct = choice === l16.ANSWER;
+//   const correct = l16.isCorrect(placements);
 
-//   await l16.recordAction(session.id, 'answer', choice, correct);
+//   await l16.recordAction(session.id, 'answer', l16.placementKey(placements), correct);
 //   await l16.addAttempt(session.id, !correct);
 
 //   if (!correct) {
@@ -358,7 +358,7 @@
 //       completed: false,
 //       wrongAttempts: wrongBefore + 1,
 //       attempts: attemptsBefore + 1,
-//       message: 'Not him. Look at the clues again!',
+//       message: 'Not these frames. Try again!',
 //     });
 //   }
 
@@ -400,8 +400,8 @@
 // }));
 
 // /* ---------------------------------------------------------
-//    POST /level16/hint      body: { sessionId, playerId }     FREE
-//    shows the clue directly, no hints are spent
+//    POST /level16/hint      body: { sessionId, playerId }     costs 25 hints
+//    gives the next clue (1, 2, 3 ...). After the last one, the last clue repeats.
 // --------------------------------------------------------- */
 
 // r.post('/hint', handle(async (req, res) => {
@@ -409,15 +409,23 @@
 //   if (!ctx) return;
 //   const { session, playerId } = ctx;
 
+//   const used = Number(session.hints_used);
+//   const index = Math.min(used, l16.HINTS.length - 1);
+
+//   const left = await l16.spendHints(playerId, l16.HINT_COST);
+//   if (left === null) {
+//     return bad(res, 402, 'not_enough_hints', `You need ${l16.HINT_COST} hints`);
+//   }
+
 //   await l16.markHintUsed(session.id);
-//   await l16.recordAction(session.id, 'hint', String(Number(session.hints_used) + 1), false);
+//   await l16.recordAction(session.id, 'hint', String(used + 1), false);
 
 //   res.json({
 //     success: true,
-//     hints: await l16.getHints(playerId),
-//     hint: { text: CLUE_TEXT },
-//     hintsUsed: Number(session.hints_used) + 1,
-//     cost: 0,
+//     hints: left,
+//     hint: { number: index + 1, text: l16.HINTS[index] },
+//     hintsUsed: used + 1,
+//     cost: l16.HINT_COST,
 //   });
 // }));
 
@@ -490,9 +498,6 @@ const r = express.Router();
 const SKIP_COST = 50;
 const REWARD_HINTS = 75;
 
-// the clue is free (no hints are spent)
-const CLUE_TEXT = "Sometimes, the best excuse is the one that sounds too perfect. Look for something that doesn't add up.";
-
 /* ---------- HELPERS ---------- */
 
 const handle = (fn) => async (req, res) => {
@@ -559,19 +564,24 @@ r.post('/start', handle(async (req, res) => {
   let session = await l16.getActiveSession(playerId);
   if (!session) session = await l16.createSession(playerId);
 
+  const hintsUsed = Number(session.hints_used);
+
   res.json({
     success: true,
     sessionId: session.id,
     level: l16.LEVEL_DATA,
     status: session.status,
-    hintsUsed: Number(session.hints_used),
+    hintsUsed,
     wrongAttempts: Number(session.wrong_attempts),
     hints: Number(player.hints) || 0,
+    // clues the player already bought in this session
+    clues: l16.HINTS.slice(0, Math.min(hintsUsed, l16.HINTS.length)),
   });
 }));
 
 /* ---------------------------------------------------------
-   POST /level16/answer    body: { sessionId, playerId, choice }
+   POST /level16/answer
+   body: { sessionId, playerId, placements: { red:'f1', green:'f2', cyan:'f3' } }
 --------------------------------------------------------- */
 
 r.post('/answer', handle(async (req, res) => {
@@ -579,16 +589,16 @@ r.post('/answer', handle(async (req, res) => {
   if (!ctx) return;
   const { session, playerId } = ctx;
 
-  const choice = String(req.body?.choice || '').toUpperCase().trim();
-  if (!l16.LEVEL_DATA.options.includes(choice)) {
-    return bad(res, 400, 'invalid_choice', 'Choice must be A, B, C or D');
+  const placements = req.body?.placements;
+  if (!l16.isValidPlacements(placements)) {
+    return bad(res, 400, 'invalid_placements', 'Put every object in a frame');
   }
 
   const wrongBefore = Number(session.wrong_attempts);
   const attemptsBefore = Number(session.total_attempts);
-  const correct = choice === l16.ANSWER;
+  const correct = l16.isCorrect(placements);
 
-  await l16.recordAction(session.id, 'answer', choice, correct);
+  await l16.recordAction(session.id, 'answer', l16.placementKey(placements), correct);
   await l16.addAttempt(session.id, !correct);
 
   if (!correct) {
@@ -598,7 +608,7 @@ r.post('/answer', handle(async (req, res) => {
       completed: false,
       wrongAttempts: wrongBefore + 1,
       attempts: attemptsBefore + 1,
-      message: 'Not him. Look at the clues again!',
+      message: 'Not quite. Try again!',
     });
   }
 
@@ -640,25 +650,32 @@ r.post('/answer', handle(async (req, res) => {
 }));
 
 /* ---------------------------------------------------------
-   POST /level16/hint      body: { sessionId, playerId }     FREE
-   shows the clue directly, no hints are spent
+   POST /level16/hint      body: { sessionId, playerId }     costs 25 hints
+   gives the next clue (1, 2, 3 ...). After the last one, the last clue repeats.
 --------------------------------------------------------- */
 
 r.post('/hint', handle(async (req, res) => {
-  console.log('NEW L16 HINT ROUTE');
   const ctx = await loadSession(req, res);
   if (!ctx) return;
   const { session, playerId } = ctx;
 
+  const used = Number(session.hints_used);
+  const index = Math.min(used, l16.HINTS.length - 1);
+
+  const left = await l16.spendHints(playerId, l16.HINT_COST);
+  if (left === null) {
+    return bad(res, 402, 'not_enough_hints', `You need ${l16.HINT_COST} hints`);
+  }
+
   await l16.markHintUsed(session.id);
-  await l16.recordAction(session.id, 'hint', String(Number(session.hints_used) + 1), false);
+  await l16.recordAction(session.id, 'hint', String(used + 1), false);
 
   res.json({
     success: true,
-    hints: await l16.getHints(playerId),
-    hint: { text: CLUE_TEXT },
-    hintsUsed: Number(session.hints_used) + 1,
-    cost: 0,
+    hints: left,
+    hint: { number: index + 1, text: l16.HINTS[index] },
+    hintsUsed: used + 1,
+    cost: l16.HINT_COST,
   });
 }));
 
