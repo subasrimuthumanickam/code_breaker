@@ -126,6 +126,8 @@ import BTCongratsScreen from "./src/screens/braintwist/BTCongratsScreen";
 import * as btApi from "./src/screens/braintwist/api";
 import BTLevelMapScreen from "./src/screens/braintwist/BTLevelMapScreen";
 import { getMap } from "./src/screens/braintwist/mapApi";
+// Brain Twist sound effects (drag / erase / pencil / clue / correct / wrong ...)
+import { loadSounds } from "./src/screens/braintwist/BTSound";
 
 
 
@@ -698,6 +700,14 @@ export default function App() {
   useEffect(() => {
     setFeedbackSettings(settings);
   }, [settings]);
+
+  /* ============================================================
+     BRAIN TWIST SOUNDS - preload once at app start
+  ============================================================ */
+
+  useEffect(() => {
+    loadSounds();
+  }, []);
 
   /* ============================================================
      REFRESH STATS

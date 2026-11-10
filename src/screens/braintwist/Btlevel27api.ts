@@ -1,8 +1,4 @@
-// Btlevel27api.ts
-// Frontend -> backend requests for Level 27. The backend (Braintwistlevel27routes.js)
-// saves everything in SQL and answers with JSON.
 
-// !! Use the SAME base url your other levels use (see Btlevel26api.ts).
 const BASE:string=(typeof process!=='undefined'&&(process as any).env&&(process as any).env.EXPO_PUBLIC_API_URL)||'http://localhost:4000';
 const URL27=BASE+'/api/braintwist/level27';
 

@@ -4,7 +4,7 @@ import {View,Text,TouchableOpacity,Animated,Easing,StyleSheet,useWindowDimension
 import Svg,{Rect,Path,Circle,Polygon,G} from 'react-native-svg';
 import {F,Stage,Coin,useStageW} from './BTShared';
 import BTSettingsModal from './BTSettingsModal'; // NEW: Settings pop-up (opens when the gear icon is tapped)
-import {useBTSound,playSfx} from './Btsound';     // NEW: global Music / Sound Effects settings shared by ALL levels
+import {useBTSound,playSfx} from './BTSound';     // NEW: global Music / Sound Effects settings shared by ALL levels
 
 const NAVY='#10245e',PURPLE='#7a2fd0',SKY='#3f9cf0';
 

@@ -1,11 +1,7 @@
 import React from 'react';
 import Svg, {Circle, Path, Rect, Ellipse, G, Polygon, Line, Text as SvgText} from 'react-native-svg';
 
-/* =========================================================
-   LEVEL 25 ART  -  "Save Tung Tung Tung Sahur from the police!"
-   Everything is drawn in a 480 x 420 scene grid.
-   The screen scales it with  k = sceneWidth / SCENE_W
-========================================================= */
+
 
 export const SCENE_W = 480;
 export const SCENE_H = 420;

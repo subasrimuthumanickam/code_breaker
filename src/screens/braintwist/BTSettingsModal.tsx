@@ -1,9 +1,11 @@
 
+
 import React, { useEffect, useRef } from 'react';
 import {
   View, Text, TouchableOpacity, Animated, Easing, StyleSheet, Alert, BackHandler, Platform,
 } from 'react-native';
 import Svg, { Path, Circle, Polygon, Line } from 'react-native-svg';
+import { play } from './BTSound';
 
 const NAVY = '#10245e';
 const CREAM = '#fdebd3';
@@ -111,7 +113,12 @@ export default function BTSettingsModal({
     return () => sub.remove();
   }, [visible]);
 
-  const defaultAbout = () => Alert.alert('About', `Brain Twist\nVersion ${version}`);
+  // the toggle state lives in BTSound (useBTSound), so just play a confirm tap here
+  const handleSfx = (v: boolean) => { onSfxChange(v); if (v) play('tap'); };
+  const handleMusic = (v: boolean) => { onMusicChange(v); if (sfx) play('tap'); };
+  const handleClose = () => { play('tap'); onClose(); };
+
+  const defaultAbout =() => Alert.alert('About', `Brain Twist\nVersion ${version}`);
 
   // Not a RN <Modal>: it is drawn inside the parent (the game column), so it is always centred in the column.
   if (!visible) return null;
@@ -130,8 +137,8 @@ export default function BTSettingsModal({
           <View style={styles.card}>
             <View style={{ height: 34 }} />
 
-            <Row icon={<MusicIcon />} label="Music" value={music} onChange={onMusicChange} />
-            <Row icon={<SpeakerIcon />} label="Sound Effects" value={sfx} onChange={onSfxChange} />
+            <Row icon={<MusicIcon />} label="Music" value={music} onChange={handleMusic} />
+            <Row icon={<SpeakerIcon />} label="Sound Effects" value={sfx} onChange={handleSfx} />
 
             <View style={styles.divider} />
 
@@ -148,7 +155,7 @@ export default function BTSettingsModal({
               <Text style={styles.versionText}>Version {version}</Text>
             </View>
 
-            <TouchableOpacity activeOpacity={0.85} style={styles.closeBtn} onPress={onClose}>
+            <TouchableOpacity activeOpacity={0.85} style={styles.closeBtn} onPress={handleClose}>
               <Text style={styles.closeText}>Close</Text>
             </TouchableOpacity>
           </View>
@@ -165,7 +172,7 @@ export default function BTSettingsModal({
           </View>
 
           {/* red close (X) */}
-          <TouchableOpacity activeOpacity={0.85} style={styles.xBtn} onPress={onClose}>
+          <TouchableOpacity activeOpacity={0.85} style={styles.xBtn} onPress={handleClose}>
             <Svg width={22} height={22} viewBox="0 0 24 24">
               <Line x1={5} y1={5} x2={19} y2={19} stroke="#fff" strokeWidth={4.5} strokeLinecap="round" />
               <Line x1={19} y1={5} x2={5} y2={19} stroke="#fff" strokeWidth={4.5} strokeLinecap="round" />
