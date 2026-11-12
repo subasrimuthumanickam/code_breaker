@@ -886,12 +886,12 @@ export default function BTLevel19Screen({playerId,hints=0,setHints,onExit,onComp
         <TouchableOpacity style={s.mClose} onPress={()=>setShowClues(false)}>
           <Text style={s.mCloseT}>✕</Text>
         </TouchableOpacity>
-        <Text style={s.mTitle}>CLUES</Text>
+        <Text style={s.mTitle}>HINTS</Text>
         {clues.map(c=>(
           <View key={c.n} style={s.mClue}>
             <View style={s.mNum}><Text style={s.mNumT}>{c.n}</Text></View>
             <View style={{flex:1}}>
-              <Text style={s.mClueH}>Clue {c.n}</Text>
+              <Text style={s.mClueH}>Hint {c.n}</Text>
               <Text style={s.mClueT}>{c.text}</Text>
             </View>
           </View>

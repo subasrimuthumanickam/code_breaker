@@ -86,6 +86,7 @@ export type SfxName =
   | 'wrong'
   | 'merge'
   | 'key'
+  | 'keydel'
   | 'btn'
   | 'tap'
   | 'line1'
@@ -102,7 +103,8 @@ const FILES: Record<SfxName, any> = {
   correct: require('../../../assets/sounds/correct.wav'),
   wrong: require('../../../assets/sounds/wrong.wav'),
   merge: require('../../../assets/sounds/merge.wav'),
-  key: require('../../../assets/sounds/key.wav'),
+  key: require('../../../assets/key-sounds/key (1).wav'),
+  keydel: require('../../../assets/key-sounds/keydel.wav'),
   btn: require('../../../assets/sounds/btn.wav'),
   tap: require('../../../assets/sounds/tap.wav'),
   line1: require('../../../assets/sounds/line1.wav'),

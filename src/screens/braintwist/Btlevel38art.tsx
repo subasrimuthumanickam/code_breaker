@@ -44,7 +44,7 @@ export const Mat38=({onSearch,onClue,onSkip,disabled}:any)=><View style={s.mat}>
   <View style={s.col}><Pop inner={s.search} onPress={onSearch} disabled={disabled}><Icon n="search" s={34}/></Pop>
     <View style={s.pill}><Text style={s.pt}>Search</Text></View></View>
   <View style={s.col}><Pop inner={s.clue} onPress={onClue} disabled={disabled}><Icon n="bulb" s={34}/></Pop>
-    <View style={s.pill}><Text style={s.pt}>Clue</Text></View></View>
+    <View style={s.pill}><Text style={s.pt}>Hint</Text></View></View>
   <View style={s.col}><Pop inner={s.skip} onPress={onSkip} disabled={disabled}><FastForward/></Pop>
     <View style={s.pill}><Text style={s.pt}>Skip</Text></View></View>
 </View>;

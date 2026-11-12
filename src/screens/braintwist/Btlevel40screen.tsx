@@ -205,14 +205,14 @@ export default function Btlevel40screen({ playerId, hints, setHints, onExit, onC
         {!!note && <Text style={styles.note}>{note}</Text>}
       </View>
 
-      {/* bottom bar: Clue (search) + Skip */}
+      {/* bottom bar: Hint (search) + Skip */}
       <View style={styles.bottomBar}>
         <View style={styles.action}>
           <Text style={styles.cost}>💡 x{CLUE_COST}</Text>
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#BDEBFF' }]} onPress={onClue}>
             <Text style={styles.actionIcon}>🔍</Text>
           </TouchableOpacity>
-          <View style={styles.label}><Text style={styles.labelTxt}>Clue</Text></View>
+          <View style={styles.label}><Text style={styles.labelTxt}>Hint</Text></View>
         </View>
         <View style={styles.action}>
           <Text style={styles.cost}>💡 x{SKIP_COST}</Text>

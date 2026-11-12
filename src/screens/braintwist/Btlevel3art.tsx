@@ -69,9 +69,6 @@ export function SpotScene({ side, width }: { side: 'a' | 'b'; width: number }) {
   );
 }
 
-/* =========================================================
-   BUTTON ICONS (viewBox 100 x 100)
-========================================================= */
 
 export function MagnifierIcon({ size }: { size: number }) {
   return (

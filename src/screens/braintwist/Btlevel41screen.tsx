@@ -245,7 +245,7 @@ export default function Btlevel41screen({ playerId, onExit, onComplete }: Props)
           <Pressable style={[s.circle, { backgroundColor: '#BEE8FA' }]} onPress={onClue}>
             <Text style={{ fontSize: 28 }}>🔍</Text>
           </Pressable>
-          <View style={s.label}><Text style={s.labelTxt}>Clue</Text></View>
+          <View style={s.label}><Text style={s.labelTxt}>Hint</Text></View>
         </View>
         <View style={s.matItem}>
           <Text style={s.cost}>💡 x{state.skipCost}</Text>

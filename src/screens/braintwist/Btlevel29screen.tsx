@@ -339,7 +339,7 @@ const Btlevel29screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
         <Modal visible={showClue} transparent animationType="fade" onRequestClose={() => setShowClue(false)}>
           <View style={s.modalBg}>
             <View style={s.modalCard}>
-              <Text style={s.modalTitle}>CLUE</Text>
+              <Text style={s.modalTitle}>HINT</Text>
               <Text style={s.modalText}>{clue}</Text>
               <TouchableOpacity style={s.checkBtn} onPress={() => setShowClue(false)}>
                 <Text style={s.checkText}>OK</Text>

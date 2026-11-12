@@ -122,7 +122,7 @@ import ErrorBoundary from "./src/components/ErrorBoundary";
 import BTSplashScreen from "./src/screens/braintwist/BTSplashScreen";
 import BTHomeScreen from "./src/screens/braintwist/BTHomeScreen";
 import BTGameScreen from "./src/screens/braintwist/BTGameScreen";
-import BTCongratsScreen from "./src/screens/braintwist/BTCongratsScreen";
+import BTCongrats from "./src/screens/braintwist/Btcongrats";
 import * as btApi from "./src/screens/braintwist/api";
 import BTLevelMapScreen from "./src/screens/braintwist/BTLevelMapScreen";
 import { getMap } from "./src/screens/braintwist/mapApi";
@@ -311,7 +311,7 @@ const BT_START_HINTS = 50;
 // true  = after a normal win show the "LEVEL COMPLETE" screen (NEXT button)
 // false = after a win / submit go straight to the next unlocked level (e.g. Level 3)
 // (skip always goes straight to the next level)
-const BT_SHOW_COMPLETE_SCREEN = false;
+const BT_SHOW_COMPLETE_SCREEN = true;
 
 /* ============================================================
    ROOM STORAGE
@@ -1851,45 +1851,23 @@ export default function App() {
               ===================================================== */}
 
               <Stack.Screen name="BtWin">
-                {({ navigation, route }) => {
+                {({ navigation }) => {
                   if (!btPlayer) {
                     return <RedirectTo navigation={navigation} to="Menu" />;
                   }
 
-                  const hasNext = btN < btTotal;
-
                   return (
-                    <BTCongratsScreen
-                      key={btN}
+                    <BTCongrats
                       n={btN}
-                      hints={btHints}
-                      playerId={btPlayer?.id}
-                      stats={route.params?.stats}
-                      hasNext={hasNext}
-                      onNext={async () => {
-                        // the backend has already saved the win and unlocked the next level
-                        let next = hasNext ? btN + 1 : 0;
-                        try {
-                          const m = await getMap(btPlayer.id);
-                          setBtTotal(m.total);
-                          next = m.finished ? 0 : m.currentLevel;
-                        } catch (e) {}
-
-                        if (next) {
-                          setBtN(next);
+                      onNext={() => {
+                        const nextLevel = btN + 1;
+                        if (nextLevel <= btTotal) {
+                          setBtN(nextLevel);
+                          setBtRun((run) => run + 1);
                           navigation.replace("BtGame");
                         } else {
                           navigation.navigate("BtHome");
                         }
-                      }}
-                      onHome={async () => {
-                        // win aana apram Ready screen la correct next level kaattanum
-                        try {
-                          const m = await getMap(btPlayer.id);
-                          setBtN(m.currentLevel);
-                          setBtTotal(m.total);
-                        } catch (e) {}
-                        navigation.navigate("BtHome");
                       }}
                     />
                   );

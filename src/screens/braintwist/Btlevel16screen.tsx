@@ -310,7 +310,7 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
       {showClues && (
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.mTitle}>CLUES</Text>
+            <Text style={styles.mTitle}>HINTS</Text>
             <Pressable style={styles.mClose} onPress={() => setShowClues(false)}>
               <Text style={styles.mCloseX}>✕</Text>
             </Pressable>
@@ -320,13 +320,13 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
                   <Text style={styles.clueNumT}>{c.n}</Text>
                 </View>
                 <View style={{ flex: 1 }}>
-                  <Text style={styles.clueHead}>Clue {c.n}</Text>
+                  <Text style={styles.clueHead}>Hint {c.n}</Text>
                   <Text style={styles.clueBody}>{c.text}</Text>
                 </View>
               </View>
             ))}
             {level && shownClues.length < level.hintCount && (
-              <Text style={styles.mFoot}>Tap the 🔍 button for the next clue ({HINT_COST} 💡)</Text>
+              <Text style={styles.mFoot}>Tap the 🔍 button for the next hint ({HINT_COST} 💡)</Text>
             )}
           </View>
         </View>

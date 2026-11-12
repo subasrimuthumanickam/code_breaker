@@ -1,26 +1,12 @@
-// backend/src/data/level4Db.js
-// Brain Twist - LEVEL 4 (dive jump + fish) : every MySQL query lives in this file.
-// The routes file (Braintwistlevel4routes.js) only handles request / response (JSON).
-//
-// Player raises the pool water (0 - 100), presses JUMP, the server decides.
-// Every jump is stored in bt_level4_attempts with the water level that was used.
-
+﻿// Brain Twist - LEVEL 4 (dive jump + fish): all MySQL logic lives here.
 const db = require('../db');
 
 const LEVEL = 4;
-
-/* ---------------------------------------------------------
-   small helpers
---------------------------------------------------------- */
 
 const one = async (sql, params = []) => {
   const [rows] = await db.query(sql, params);
   return rows[0] || null;
 };
-
-/* ---------------------------------------------------------
-   TABLES  (created once when the server starts)
---------------------------------------------------------- */
 
 const ready = (async () => {
   await db.query(`
@@ -49,14 +35,22 @@ const ready = (async () => {
     )
   `);
 
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS bt_level4_hint_views (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      session_id INT NOT NULL,
+      player_id INT NOT NULL,
+      hint_text TEXT NOT NULL,
+      charged TINYINT(1) NOT NULL DEFAULT 0,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_l4_hint_session (session_id)
+    )
+  `);
+
   console.log('[BrainTwist L4] tables ready');
 })().catch((err) =>
   console.error('[BrainTwist L4] could not create tables:', err.message)
 );
-
-/* ---------------------------------------------------------
-   PLAYER / HINTS
---------------------------------------------------------- */
 
 const getPlayer = (playerId) =>
   one('SELECT id, hints FROM bt_players WHERE id = ?', [playerId]);
@@ -66,21 +60,16 @@ const getHints = async (playerId) => {
   return row ? Number(row.hints) || 0 : 0;
 };
 
-// returns false when the player does not have enough hints
 const spendHints = async (playerId, amount) => {
   const [result] = await db.query(
     'UPDATE bt_players SET hints = hints - ? WHERE id = ? AND hints >= ?',
     [amount, playerId, amount]
   );
-  return result.affectedRows > 0;
+  return result && result.affectedRows > 0;
 };
 
 const addHints = (playerId, amount) =>
   db.query('UPDATE bt_players SET hints = hints + ? WHERE id = ?', [amount, playerId]);
-
-/* ---------------------------------------------------------
-   SESSIONS
---------------------------------------------------------- */
 
 const getSession = (sessionId, playerId) =>
   one('SELECT * FROM bt_level4_sessions WHERE id = ? AND player_id = ?', [sessionId, playerId]);
@@ -103,10 +92,6 @@ const createSession = async (playerId) => {
 
 const markHintUsed = (sessionId) =>
   db.query('UPDATE bt_level4_sessions SET hint_used = 1 WHERE id = ?', [sessionId]);
-
-/* ---------------------------------------------------------
-   JUMPS
---------------------------------------------------------- */
 
 const recordAttempt = (sessionId, waterLevel, outcome, correct) =>
   db.query(
@@ -135,10 +120,6 @@ const skipSession = (sessionId) =>
     "UPDATE bt_level4_sessions SET status = 'skipped', completed_at = NOW() WHERE id = ?",
     [sessionId]
   );
-
-/* ---------------------------------------------------------
-   PROGRESS  (same tables levels 2 and 3 use)
---------------------------------------------------------- */
 
 const saveProgress = async (playerId, score, stars, attempts) => {
   const found = await one(
@@ -191,6 +172,13 @@ const getProgress = (playerId) =>
     [playerId, LEVEL]
   );
 
+const saveHintView = async (sessionId, playerId, hintText, charged) => {
+  await db.query(
+    'INSERT INTO bt_level4_hint_views (session_id, player_id, hint_text, charged) VALUES (?, ?, ?, ?)',
+    [sessionId, playerId, hintText, charged ? 1 : 0]
+  );
+};
+
 module.exports = {
   LEVEL,
   ready,
@@ -209,4 +197,5 @@ module.exports = {
   saveProgress,
   unlockNext,
   getProgress,
+  saveHintView,
 };

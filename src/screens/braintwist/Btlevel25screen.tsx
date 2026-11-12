@@ -2059,11 +2059,11 @@ export default function BTLevel25Screen({playerId,hints=0,setHints,onExit,onComp
         <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={()=>setClueOpen(false)}>
           <Text style={st.closeT}>✕</Text>
         </TouchableOpacity>
-        <Text style={st.clueTitle}>CLUES</Text>
+        <Text style={st.clueTitle}>HINTS</Text>
         <View style={[st.clueRow,st.clueRowOpen]}>
           <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
           <View style={{flex:1}}>
-            <Text style={st.clueHead}>Clue 1</Text>
+            <Text style={st.clueHead}>Hint 1</Text>
             <Text style={st.clueBody}>{view.clue}</Text>
           </View>
         </View>

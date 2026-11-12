@@ -693,13 +693,13 @@ const Btlevel30screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
                 <TouchableOpacity style={s.closeBtn} activeOpacity={0.85} onPress={() => setShowClue(false)}>
                   <Text style={s.closeT}>✕</Text>
                 </TouchableOpacity>
-                <Text style={s.clueTitle}>CLUES</Text>
+                <Text style={s.clueTitle}>HINTS</Text>
                 <View style={s.clueRow}>
                   <View style={s.clueNum}>
                     <Text style={s.clueNumT}>1</Text>
                   </View>
                   <View style={{ flex: 1 }}>
-                    <Text style={s.clueHead}>Clue 1</Text>
+                    <Text style={s.clueHead}>Hint 1</Text>
                     <Text style={s.clueBody}>{clue}</Text>
                   </View>
                 </View>

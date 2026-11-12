@@ -153,14 +153,14 @@ export default function BTLevel18Screen({playerId,hints,setHints,onExit,onComple
       {/* clues modal */}
       {showClues&&<View style={bd.overlay}>
         <View style={bd.modal}>
-          <Text style={bd.mTitle}>CLUES</Text>
+          <Text style={bd.mTitle}>HINTS</Text>
           <TouchableOpacity style={bd.mClose} onPress={()=>setShowClues(false)}>
             <Text style={bd.mCloseX}>✕</Text>
           </TouchableOpacity>
           <View style={bd.clueCard}>
             <View style={bd.clueNum}><Text style={bd.clueNumT}>1</Text></View>
             <View style={{flex:1}}>
-              <Text style={bd.clueHead}>Clue 1</Text>
+              <Text style={bd.clueHead}>Hint 1</Text>
               <Text style={bd.clueBody}>{hintText}</Text>
             </View>
           </View>

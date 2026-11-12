@@ -321,7 +321,7 @@ export default function Btlevel42screen({ playerId, hints = 0, setHints, onExit,
             <Text style={styles.actionIcon}>🔍</Text>
           </Pressable>
           <View style={styles.label}>
-            <Text style={styles.labelTxt}>Clue</Text>
+            <Text style={styles.labelTxt}>Hint</Text>
           </View>
         </View>
         <View style={styles.actionCol}>

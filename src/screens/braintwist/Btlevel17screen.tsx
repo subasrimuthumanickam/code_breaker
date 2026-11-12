@@ -709,12 +709,12 @@ export default function BTLevel7Screen({playerId,hints=0,onExit,onComplete,onWat
         <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={()=>{play('btn');setClueOpen(false)}}>
           <Text style={st.closeT}>✕</Text>
         </TouchableOpacity>
-        <Text style={st.clueTitle}>CLUES</Text>
+        <Text style={st.clueTitle}>HINTS</Text>
 
         <View style={[st.clueRow,st.clueRowOpen]}>
           <View style={st.clueNum}><Text style={st.clueNumT}>{stageNo}</Text></View>
           <View style={{flex:1}}>
-            <Text style={st.clueHead}>{'Clue '+stageNo}</Text>
+            <Text style={st.clueHead}>{'Hint '+stageNo}</Text>
             <Text style={st.clueBody}>{CLUES[stageNo]}</Text>
           </View>
         </View>

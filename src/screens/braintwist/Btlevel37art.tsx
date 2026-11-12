@@ -29,7 +29,7 @@ const Pop=({style,inner,onPress,disabled,children}:any)=><Pressable disabled={di
 export const Mat=({onClue,onVideo,onSkip,disabled,hintCost=25,videoReward=75,skipCost=50}:any)=><View style={s.mat}>
   <View style={s.col}>
     <Pop inner={s.clue} onPress={onClue} disabled={disabled}><Icon n="search" s={34}/></Pop>
-    <View style={s.pill}><Text style={s.pt}>Clue</Text></View>
+    <View style={s.pill}><Text style={s.pt}>Hint</Text></View>
   </View>
   <View style={s.col}>
     <Pop inner={s.video} onPress={onVideo} disabled={disabled}><Icon n="film" s={36}/></Pop>
