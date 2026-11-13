@@ -4189,9 +4189,6 @@ const DOT_ROT = [28, 24, 22, 16, 18, 20, 25]; // each chalk blob is tilted a lit
 // the question shown in the top pill
 const QUESTION = 'Follow the dots and complete the star';
 
-// must match HINT_COST in the backend (the backend is the one that really charges)
-const HINT_COST = 25;
-
 type Props = {
   playerId: number;
   hints?: number;
@@ -4529,17 +4526,9 @@ export default function BTLevel6Screen({ playerId, hints = 0, setHints, onExit, 
 
   live.current = { view, sessionId, busy, done, S };
 
-  // 3. magnifier tapped -> ask the backend. It charges HINT_COST once per session,
-  //    saves that in the database, and sends the clue text back (free if already bought).
+  // Ask the backend for the clue; hints do not consume the player's balance.
   const onHint = async () => {
     if (done || busy || !sessionId) return;
-
-    // not bought yet and cannot afford it
-    if (!clueUsed && hints < HINT_COST) {
-      play('wrong');
-      flash(`You need ${HINT_COST} hints. Watch a video to earn more!`);
-      return;
-    }
 
     try {
       const r = await hintLevel6({ sessionId, playerId });
@@ -4549,8 +4538,7 @@ export default function BTLevel6Screen({ playerId, hints = 0, setHints, onExit, 
       play('clue');
       setClueOpen(true);
     } catch (e: any) {
-      const noFunds = e?.status === 402 || /not enough|payment/i.test(e?.message || '');
-      flash(noFunds ? `You need ${HINT_COST} hints. Watch a video to earn more!` : e?.message || 'Network error');
+      flash(e?.message || 'Network error');
     }
   };
 
@@ -4694,12 +4682,12 @@ export default function BTLevel6Screen({ playerId, hints = 0, setHints, onExit, 
 
           <View style={st.btnCol}>
             <TouchableOpacity
-              style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }, (!clueUsed && hints < HINT_COST) && { opacity: 0.5 }]}
+              style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }]}
               activeOpacity={0.85} onPress={onHint}
             >
               <Icon n="search" s={31} />
             </TouchableOpacity>
-            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>{HINT_COST}</Text></View>
+            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>FREE</Text></View>
           </View>
 
           <View style={st.btnCol}>

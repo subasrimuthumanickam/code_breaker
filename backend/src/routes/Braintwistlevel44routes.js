@@ -91,7 +91,7 @@ router.get('/', async (req, res) => {
       suffix: cfg.question_suffix,
       shownNumber: cfg.shown_number,
       appleCount: cfg.apple_count,
-      hintCost: cfg.hint_cost,
+      hintCost: 0,
       skipCost: cfg.skip_cost,
     });
   } catch (e) {
@@ -131,7 +131,7 @@ router.post('/hint', async (req, res) => {
     const cfg = await db.getLevelConfig();
     if (!cfg) return res.status(404).json({ error: 'Level 44 not found' });
     await db.addHintUsed(userId);
-    res.json({ hint: cfg.hint_text, cost: cfg.hint_cost });
+    res.json({ success: true, free: true, hint: cfg.hint_text, cost: 0 });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });

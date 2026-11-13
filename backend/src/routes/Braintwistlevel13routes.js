@@ -117,7 +117,7 @@ router.post('/burn', async (req, res) => {
   }
 });
 
-/* POST /level13/hint  { playerId, sessionId }   (costs 25 hints) */
+/* POST /level13/hint  { playerId, sessionId }   (free) */
 router.post('/hint', async (req, res) => {
   try {
     const s = await loadSession(req, res);
@@ -127,11 +127,8 @@ router.post('/hint', async (req, res) => {
     const next = HINT_ORDER.find((x) => !burned.includes(x));
     if (!next) return res.json(view(s, { text: 'Everything is already burned!', hints: null }));
 
-    const hints = await L.spendHints(s.player_id, HINT_COST);
-    if (hints === null) return bad(res, 402, 'not_enough_hints', 'Not enough hints');
-
     await L.addHintUsed(s.id);
-    res.json(view(s, { hints, text: HINT_TEXT[next], target: next }));
+    res.json(view(s, { free: true, cost: 0, hints: await L.getHints(s.player_id), text: HINT_TEXT[next], target: next }));
   } catch (e) {
     console.error('[level13] hint:', e);
     bad(res, 500, 'server_error', 'Could not get a hint');

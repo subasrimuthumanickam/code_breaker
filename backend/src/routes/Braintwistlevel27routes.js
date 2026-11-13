@@ -368,7 +368,7 @@ router.post('/answer', wrap(async (req, res) => {
 }));
 
 // ---------------------------------------------------------------------------
-// POST /hint  { sessionId, playerId }   costs 25, gives the next clue
+// POST /hint  { sessionId, playerId }   free, gives the next clue
 // ---------------------------------------------------------------------------
 router.post('/hint', wrap(async (req, res) => {
   const o = await openSession(req, res);
@@ -376,12 +376,9 @@ router.post('/hint', wrap(async (req, res) => {
 
   if (Number(o.s.hints_used) >= MAX_CLUES) return fail(res, 400, 'No more clues for this level.');
 
-  const left = await db.spendHints(o.pid, HINT_COST);
-  if (left === null) return fail(res, 402, 'Not enough hints');
-
   const clueNo = await db.addHintUsed(o.sid);
   const cfg = await db.getConfig();
-  res.json({ hints: left, clue: cfg.clues[clueNo - 1], clueNo, total: MAX_CLUES });
+  res.json({ success: true, free: true, cost: 0, hints: await db.getHints(o.pid), clue: cfg.clues[clueNo - 1], clueNo, total: MAX_CLUES });
 }));
 
 // ---------------------------------------------------------------------------

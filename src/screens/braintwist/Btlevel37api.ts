@@ -18,4 +18,4 @@ async function req<T>(path: string, method: 'GET' | 'POST' = 'GET', body?: objec
 
 export const getLevel = () => req<Level37>('/');
 export const submit = (playerId: number, answer: number) => req<Level37Result>('/submit', 'POST', { playerId, answer });
-export const getClue = () => req<{ success: boolean; clue: string }>('/clue', 'POST', {});
+export const getClue = (playerId: number) => req<{ success: boolean; clue: string }>('/clue', 'POST', { playerId });

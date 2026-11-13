@@ -75,14 +75,12 @@ export const OptionRow = ({
 };
 
 export const BottomBar = ({
-  hintCost,
   videoReward,
   skipCost,
   onHint,
   onVideo,
   onSkip,
 }: {
-  hintCost: number;
   videoReward: number;
   skipCost: number;
   onHint: () => void;
@@ -90,7 +88,7 @@ export const BottomBar = ({
   onSkip: () => void;
 }) => (
   <View style={s.bar}>
-    <BarBtn icon="🔍" bg="#7ED321" label={`💡 ${hintCost}`} onPress={onHint} />
+    <BarBtn icon="🔍" bg="#7ED321" label="💡 FREE" onPress={onHint} />
     <BarBtn icon="🎬" bg="#FFFFFF" label={`🪙 +${videoReward}`} onPress={onVideo} />
     <BarBtn icon="▶" bg="#EF4444" label={`💡 ${skipCost}`} onPress={onSkip} iconColor="#fff" />
   </View>

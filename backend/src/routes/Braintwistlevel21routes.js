@@ -6,8 +6,6 @@ const r = express.Router();
 const LEVEL = 21;
 const PICK_COUNT = 4;
 
-// keep in sync with the frontend (Btlevel21screen.tsx)
-const HINT_COST = 25;
 const SKIP_COST = 50;
 
 /* ---------- HELPERS ---------- */
@@ -384,7 +382,7 @@ r.post('/action', handle(async (req, res) => {
 
 /* ---------------------------------------------------------
    POST /level21/hint     body: { sessionId, playerId, locked: [index...] }
-   Reveals one more number that belongs to a valid answer. Costs HINT_COST.
+   Reveals one more number that belongs to a valid answer for free.
 --------------------------------------------------------- */
 
 r.post('/hint', handle(async (req, res) => {
@@ -429,11 +427,6 @@ r.post('/hint', handle(async (req, res) => {
 
   const next = sol.find((i) => !locked.includes(i));
 
-  const newBalance = await spendHints(playerId, HINT_COST);
-  if (newBalance === null) {
-    return bad(res, 402, 'not_enough_hints', `Need ${HINT_COST} hints. You have ${await getHints(playerId)}.`);
-  }
-
   const indices = [...locked, next];
 
   await db.query(
@@ -444,9 +437,11 @@ r.post('/hint', handle(async (req, res) => {
 
   res.json({
     success: true,
-    charged: true,
+    free: true,
+    charged: false,
+    cost: 0,
     indices,
-    hints: newBalance,
+    hints: await getHints(playerId),
     message: `Hint: ${puzzle.numbers[next]} is in the answer`,
   });
 }));

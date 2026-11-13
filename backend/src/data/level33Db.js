@@ -13,7 +13,7 @@ const QUESTION = {
     { id: 'D', text: 'None of the above' },
   ],
   correct: 'C',
-  hintCost: 25,
+  hintCost: 0,
   skipCost: 50,
   videoReward: 75,
   reward: 10,

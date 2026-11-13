@@ -147,7 +147,7 @@ const ANSWER = '052'; // lives ONLY on the server
 
 const QUESTION = {
   text: 'Guess the number',
-  hintCost: 25,
+  hintCost: 0,
   skipCost: 50,
   videoReward: 75,
   reward: 10,

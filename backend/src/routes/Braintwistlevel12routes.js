@@ -189,7 +189,7 @@ r.post('/tap', handle(async (req, res) => {
 }));
 
 /* ---------------------------------------------------------
-   POST /hint   body: { sessionId, playerId }   (costs 25 hints)
+   POST /hint   body: { sessionId, playerId }   (free)
 --------------------------------------------------------- */
 
 r.post('/hint', handle(async (req, res) => {
@@ -197,12 +197,9 @@ r.post('/hint', handle(async (req, res) => {
   if (!ctx) return;
   const { sessionId, playerId } = ctx;
 
-  const hints = await L12.spendHints(playerId, COST_HINT);
-  if (hints === null) return bad(res, 402, 'not_enough_hints', 'Not enough hints');
-
   await L12.markHintUsed(sessionId);
 
-  res.json({ success: true, text: HINT_TEXT, target: ANSWER, hints, cost: COST_HINT });
+  res.json({ success: true, free: true, text: HINT_TEXT, target: ANSWER, hints: await L12.getHints(playerId), cost: 0 });
 }));
 
 /* ---------------------------------------------------------

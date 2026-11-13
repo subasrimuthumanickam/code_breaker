@@ -913,7 +913,7 @@ async function buildState(conn, userId, puzzle) {
     attempts: p.attempts,
     cluesUsed: p.clues_used,
     bulbs: w.bulbs,
-    clueCost: puzzle.clue_cost,
+    clueCost: 0,
     skipCost: puzzle.skip_cost,
     reward: puzzle.reward,
     revealed: revealedIdx.map((i) => ({ index: i, letter: puzzle.answer[i] })),
@@ -979,15 +979,12 @@ async function useClue(userId) {
     const [[p]] = await conn.query(
       'SELECT * FROM bt_level41_progress WHERE user_id = ? AND puzzle_id = ? FOR UPDATE',
       [userId, puzzle.id]);
-    const [[w]] = await conn.query('SELECT bulbs FROM bt_wallet WHERE user_id = ? FOR UPDATE', [userId]);
     if (p.status !== 'playing') return { ok: false, error: 'LEVEL_FINISHED', state: await buildState(conn, userId, puzzle) };
     const revealed = parseRevealed(p.revealed_json);
     const hidden = [...Array(puzzle.answer_length).keys()].filter((i) => !revealed.includes(i));
     if (hidden.length <= 1) return { ok: false, error: 'NO_MORE_CLUES', state: await buildState(conn, userId, puzzle) };
-    if (w.bulbs < puzzle.clue_cost) return { ok: false, error: 'NOT_ENOUGH_BULBS', state: await buildState(conn, userId, puzzle) };
     const pick = hidden[Math.floor(Math.random() * hidden.length)];
     revealed.push(pick);
-    await conn.query('UPDATE bt_wallet SET bulbs = bulbs - ? WHERE user_id = ?', [puzzle.clue_cost, userId]);
     await conn.query(
       'UPDATE bt_level41_progress SET clues_used = clues_used + 1, revealed_json = ? WHERE user_id = ? AND puzzle_id = ?',
       [JSON.stringify(revealed), userId, puzzle.id]);

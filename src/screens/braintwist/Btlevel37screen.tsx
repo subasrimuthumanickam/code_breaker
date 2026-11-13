@@ -8,7 +8,7 @@ import {F,INK,Stage} from './BTShared';
 import {Brothers,Mat} from './Btlevel37art';
 
 const NAVY='#10245e',CREAM='#fbf6e9',SKY='#9fc6ea';
-const LEVEL=37,HINT_COST=25,SKIP_COST=50;
+const LEVEL=37,SKIP_COST=50;
 
 export default function BTLevel37Screen({playerId,hints,setHints,onExit,onComplete}:any){
   const [lv,setLv]=useState<L.Level37|null>(null);
@@ -38,10 +38,9 @@ export default function BTLevel37Screen({playerId,hints,setHints,onExit,onComple
 
   const clue=async()=>{
     if(busy.current||done)return;
-    if(bal<HINT_COST){flash('Need '+HINT_COST+' hints. You have '+bal+'.');return}
     busy.current=true;
-    try{const h=await api.hint(LEVEL,playerId,[]);setHints(h.hints);const c=await L.getClue();flash(c.clue,3500)}
-    catch(e:any){flash(e?.status===402?'Not enough hints':'Network error')}
+    try{const c=await L.getClue(playerId);flash(c.clue,3500)}
+    catch(e:any){flash(e?.message||'Network error')}
     finally{busy.current=false}};
 
   const video=async()=>{
@@ -55,7 +54,7 @@ export default function BTLevel37Screen({playerId,hints,setHints,onExit,onComple
     if(bal<SKIP_COST){flash('Need '+SKIP_COST+' hints. You have '+bal+'.');return}
     busy.current=true;
     try{const r=await api.skip(LEVEL,playerId);setHints(typeof r?.hints==='number'?r.hints:bal-SKIP_COST);setDone(true);onComplete({...r,skipped:true,attempts:1})}
-    catch(e:any){flash(e?.status===402?'Not enough hints':'Network error')}
+    catch(e:any){flash(e?.message||'Network error')}
     finally{busy.current=false}};
 
   if(!lv)return <Stage bg={SKY}><View style={s.wall}><Text style={s.load}>{note||'Loading level 37...'}</Text></View></Stage>;
@@ -90,7 +89,7 @@ export default function BTLevel37Screen({playerId,hints,setHints,onExit,onComple
       <Text style={s.note}>{note}</Text>
 
       <View style={{marginBottom:24}}>
-        <Mat onClue={clue} onVideo={video} onSkip={skip} disabled={done} hintCost={HINT_COST} skipCost={SKIP_COST}/>
+        <Mat onClue={clue} onVideo={video} onSkip={skip} disabled={done} skipCost={SKIP_COST}/>
       </View>
     </ScrollView>
   </View></Stage>;

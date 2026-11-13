@@ -111,8 +111,11 @@ router.post("/submit", async (req, res, next) => {
 // POST /api/braintwist/level37/clue
 router.post("/clue", async (req, res, next) => {
   try {
+    if (!req.body?.playerId) {
+      return res.status(400).json({ success: false, error: "playerId required" });
+    }
     const lv = await db.getLevel();
-    res.json({ success: true, clue: lv.clue });
+    res.json({ success: true, free: true, cost: 0, clue: lv.clue });
   } catch (e) { next(e); }
 });
 

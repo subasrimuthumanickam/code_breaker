@@ -119,7 +119,7 @@ router.get('/info', async (req, res) => {
       question: 'What does the picture say?',
       length: cfg.answer.length,
       rows: [1, 3, 5], // pyramid of T's shown in the picture
-      clueCost: cfg.clue_cost,
+      clueCost: 0,
       skipCost: cfg.skip_cost,
       solved: !!progress.solved,
       cluesUsed: progress.clues_used,
@@ -153,22 +153,18 @@ router.post('/answer', async (req, res) => {
 // POST /api/braintwist/level49/clue  { playerId, hints, revealed: [indexes already revealed] }
 router.post('/clue', async (req, res) => {
   try {
-    const { playerId, hints } = req.body || {};
+    const { playerId } = req.body || {};
     const revealed = Array.isArray(req.body && req.body.revealed) ? req.body.revealed : [];
     if (!playerId) return res.status(400).json({ ok: false, error: 'playerId required' });
 
     const cfg = await db.getConfig();
-    if (Number(hints) < cfg.clue_cost) {
-      return res.json({ ok: false, error: 'not_enough_hints', cost: cfg.clue_cost });
-    }
-
     const free = [];
     for (let i = 0; i < cfg.answer.length; i++) if (!revealed.includes(i)) free.push(i);
     if (!free.length) return res.json({ ok: false, error: 'all_revealed' });
 
     const index = free[0];
     await db.recordClue(String(playerId));
-    res.json({ ok: true, index, letter: cfg.answer[index], cost: cfg.clue_cost });
+    res.json({ ok: true, success: true, free: true, index, letter: cfg.answer[index], cost: 0 });
   } catch (e) {
     console.error('level49 clue', e);
     res.status(500).json({ ok: false, error: 'server error' });

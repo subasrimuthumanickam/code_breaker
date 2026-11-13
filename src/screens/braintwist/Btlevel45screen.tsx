@@ -13,7 +13,7 @@ import {
 // Used only when the server can't be reached (so the game never gets stuck).
 const FALLBACK: Level45Data = {
   level: 45,
-  hintCost: 25,
+  hintCost: 0,
   skipCost: 50,
   stages: [
     {
@@ -43,12 +43,6 @@ const FALLBACK: Level45Data = {
   ],
 };
 const FALLBACK_ANSWERS = [0, 2, 0];
-const FALLBACK_HINTS = [
-  'Words can lie. Look at the colors, not the labels.',
-  'Ignore the words. Which circle is really yellow?',
-  'Look at the quotes. This time the word itself matters.',
-];
-
 export default function Btlevel45screen({ playerId, hints, setHints, onExit, onComplete }: any) {
   const { width: SW, height: SH } = useWindowDimensions();
   const USER_ID = String(playerId ?? 'guest');
@@ -129,16 +123,10 @@ export default function Btlevel45screen({ playerId, hints, setHints, onExit, onC
 
   const onHint = async () => {
     try {
-      if (Number(hints) < data.hintCost) {
-        Alert.alert('Hint', `Need ${data.hintCost} hints. You have ${Number(hints)}.`);
-        return;
-      }
       const r = await getLevel45Hint(USER_ID, stage.stage);
-      setHints(Number(hints) - r.cost);
       Alert.alert('Hint', r.hint);
     } catch {
-      setHints(Number(hints) - data.hintCost);
-      Alert.alert('Hint', FALLBACK_HINTS[Math.min(stageIdx, FALLBACK_HINTS.length - 1)]);
+      Alert.alert('Hint', 'Could not load hint. Please try again.');
     }
   };
 

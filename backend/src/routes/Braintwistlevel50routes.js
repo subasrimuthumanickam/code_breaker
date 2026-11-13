@@ -20,7 +20,7 @@ router.get('/info', async (req, res) => {
       question: cfg.question,
       bulbs: 3,
       switches: cfg.patterns, // [{on:[1,0,0], off:[0,0,0]}, ...]
-      clueCost: cfg.clueCost,
+      clueCost: 0,
       skipCost: cfg.skipCost,
       solved: !!progress.solved,
       cluesUsed: progress.clues_used,
@@ -68,19 +68,15 @@ router.post('/answer', async (req, res) => {
 // POST /api/braintwist/level50/clue  { playerId, hints }
 router.post('/clue', async (req, res) => {
   try {
-    const { playerId, hints } = req.body || {};
+    const { playerId } = req.body || {};
     if (!playerId) return res.status(400).json({ ok: false, error: 'playerId required' });
 
     const cfg = await db.getConfig();
-    if (Number(hints) < cfg.clueCost) {
-      return res.json({ ok: false, error: 'not_enough_hints', cost: cfg.clueCost });
-    }
-
     const progress = await db.ensureProgress(String(playerId));
     const idx = Math.min(progress.clues_used, cfg.hints.length - 1);
     await db.recordClue(String(playerId));
 
-    res.json({ ok: true, text: cfg.hints[idx], cost: cfg.clueCost });
+    res.json({ ok: true, success: true, free: true, text: cfg.hints[idx], cost: 0 });
   } catch (e) {
     console.error('level50 clue', e);
     res.status(500).json({ ok: false, error: 'server error' });

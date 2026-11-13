@@ -8,7 +8,7 @@ import * as api from './Btlevel32api';
 import * as mainApi from './api';
 
 const SKY = '#9fc6ea', NAVY = '#10245e', CREAM = '#fbf6e9', WOOD = '#e9b575';
-const HINT_COST = 25, SKIP_COST = 50; // same as the backend
+const SKIP_COST = 50;
 const LETTERS: api.Letter[] = ['A', 'B', 'C', 'D'];
 
 const measure = (ref: any) =>
@@ -159,15 +159,14 @@ export default function BTLevel32Screen({playerId, hints, setHints, onExit, onCo
   /* ---- hint / video / skip ---- */
   const hint = async () => {
     if (busy || ok || !lv) return;
-    if (bal < HINT_COST) { flash('Need ' + HINT_COST + ' hints. You have ' + bal + '.'); return; }
     if (hidden.length >= 2) { flash('Two shadows are left. Pick one!'); return; }
     setBusy(true);
     try {
       const r = await api.hint(lv.sessionId, playerId, hidden);
-      setHints && setHints(r.hints);
+      if (typeof r.hints === 'number') setHints && setHints(r.hints);
       setHidden(h => [...h, r.remove]);
     } catch (e: any) {
-      flash(e?.status === 402 ? 'Not enough hints' : e?.message || 'Network error');
+      flash(e?.message || 'Network error');
     } finally { setBusy(false); }
   };
   const video = async () => {
@@ -251,7 +250,7 @@ export default function BTLevel32Screen({playerId, hints, setHints, onExit, onCo
           <View style={s.mat}>
             <View style={s.acol}>
               <Pressable onPress={hint} style={[s.btn, {backgroundColor: '#a8e22a', borderColor: '#d6f58a'}]}><Icon n="search" s={32} /></Pressable>
-              <View style={s.lblRow}><Icon n="bulb" s={14} /><Text style={s.lbl}>{HINT_COST}</Text></View>
+              <View style={s.lblRow}><Icon n="bulb" s={14} /><Text style={s.lbl}>FREE</Text></View>
             </View>
             <View style={s.acol}>
               <Pressable onPress={video} style={[s.btn, {backgroundColor: '#f3efe2', borderColor: '#fff'}]}><Icon n="film" s={38} /></Pressable>

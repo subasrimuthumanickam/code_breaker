@@ -243,7 +243,7 @@ router.get('/', wrap(async (req, res) => {
       question: level.question,
       coins: p.coins,
       solved: !!p.solved,
-      costs: { search: level.search_cost, clue: level.clue_reward, skip: level.skip_cost },
+      costs: { search: 0, clue: level.clue_reward, skip: level.skip_cost },
     },
   });
 }));
@@ -276,18 +276,14 @@ router.post('/submit', wrap(async (req, res) => {
   });
 }));
 
-// POST /api/braintwist/level39/search  { userId }   (costs coins)
+// POST /api/braintwist/level39/search  { userId }   (free; usage is logged)
 router.post('/search', wrap(async (req, res) => {
   const userId = getUserId(req);
   if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
 
   const level = await db.getLevel();
-  await db.getOrCreateProgress(userId);
-  const ok = await db.adjustCoins(userId, -level.search_cost);
   const p = await db.getOrCreateProgress(userId);
-  if (!ok) return res.json({ success: false, message: 'Not enough coins', data: { coins: p.coins } });
-
-  res.json({ success: true, data: { hint: level.search_hint, coins: p.coins } });
+  res.json({ success: true, free: true, cost: 0, data: { hint: level.search_hint, coins: p.coins } });
 }));
 
 // POST /api/braintwist/level39/clue  { userId }   (reward after clue video watched)

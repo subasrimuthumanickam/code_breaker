@@ -177,7 +177,7 @@ export default function Btlevel39screen({ playerId, setHints, onExit, onComplete
         <View style={styles.matWrap}>
           <BottomMat>
             <View style={styles.actions}>
-              <Action label="Search" badge={`x${data.costs.search}`} onPress={search} disabled={busy}>
+              <Action label="Search" badge="FREE" onPress={search} disabled={busy}>
                 <RoundIcon color={COLORS.green}><SearchIcon /></RoundIcon>
               </Action>
               <Action label="Clue" badge={`+${data.costs.clue}`} onPress={clue} disabled={busy}>

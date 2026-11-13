@@ -650,7 +650,7 @@ r.post('/answer', handle(async (req, res) => {
 }));
 
 /* ---------------------------------------------------------
-   POST /level16/hint      body: { sessionId, playerId }     costs 25 hints
+   POST /level16/hint      body: { sessionId, playerId }     free
    gives the next clue (1, 2, 3 ...). After the last one, the last clue repeats.
 --------------------------------------------------------- */
 
@@ -662,20 +662,16 @@ r.post('/hint', handle(async (req, res) => {
   const used = Number(session.hints_used);
   const index = Math.min(used, l16.HINTS.length - 1);
 
-  const left = await l16.spendHints(playerId, l16.HINT_COST);
-  if (left === null) {
-    return bad(res, 402, 'not_enough_hints', `You need ${l16.HINT_COST} hints`);
-  }
-
   await l16.markHintUsed(session.id);
   await l16.recordAction(session.id, 'hint', String(used + 1), false);
 
   res.json({
     success: true,
-    hints: left,
+    free: true,
+    hints: await l16.getHints(playerId),
     hint: { number: index + 1, text: l16.HINTS[index] },
     hintsUsed: used + 1,
-    cost: l16.HINT_COST,
+    cost: 0,
   });
 }));
 

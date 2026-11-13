@@ -16,7 +16,7 @@ import { Counter, RectFigure, Scene } from './Btlevel48art';
 type Status = 'idle' | 'checking' | 'correct' | 'wrong';
 
 interface Props {
-  playerId?: number | string;
+  playerId: number | string;
   hints?: number | string;
   setHints?: (n: number) => void;
   onExit?: () => void;
@@ -26,7 +26,7 @@ interface Props {
 
 const SERIF = Platform.select({ ios: 'Georgia', android: 'serif', default: 'Georgia, serif' });
 
-const Btlevel48screen: React.FC<Props> = ({ hints, onExit, onSettings, onComplete }) => {
+const Btlevel48screen: React.FC<Props> = ({ playerId, hints, onExit, onSettings, onComplete }) => {
   const win = useWindowDimensions();
   const [box, setBox] = useState<{ w: number; h: number } | null>(null);
   const W = box?.w ?? win.width;
@@ -98,7 +98,7 @@ const Btlevel48screen: React.FC<Props> = ({ hints, onExit, onSettings, onComplet
   const showHint = async () => {
     if (!level || status !== 'idle') return;
     try {
-      const h = await fetchLevel48Hint();
+      const h = await fetchLevel48Hint(playerId);
       if (mounted.current) {
         setError(null);
         setMsg(h);

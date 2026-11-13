@@ -126,13 +126,11 @@ export default function BTLevel50Screen({ playerId, hints, setHints, onExit, onC
 
   const onClue = async () => {
     if (!info || doneR.current) return;
-    if (hints < info.clueCost) return flash('Hints madhiri illa');
     try {
-      const r = await requestLevel50Clue(playerId, hints);
+      const r = await requestLevel50Clue(playerId);
       if (r.ok && r.text) {
-        setHints(hints - (r.cost || 0));
         flash('💡 ' + r.text, 5000);
-      } else if (r.error === 'not_enough_hints') flash('Hints madhiri illa');
+      } else if (r.error) flash(r.error);
     } catch {
       flash('Network error');
     }
@@ -243,7 +241,7 @@ export default function BTLevel50Screen({ playerId, hints, setHints, onExit, onC
             </Pressable>
             <View style={st.cost}>
               <Ionicons name="bulb" size={13} color={COLORS.yellow} />
-              <Text style={st.costText}>{info.clueCost}</Text>
+              <Text style={st.costText}>FREE</Text>
             </View>
           </View>
           <View style={st.matItem}>

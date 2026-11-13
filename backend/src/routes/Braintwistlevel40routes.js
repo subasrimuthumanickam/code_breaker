@@ -135,7 +135,6 @@ initLevel40Db().catch((e) => console.error('[Level40] DB init failed:', e.messag
 
 const LEVEL = 40;
 const SECRET = '2285';
-const CLUE_COST = 25;
 const SKIP_COST = 50;
 const CLUE_TEXT = 'Books-la irukura numbers overlap aagi irukku. Order: 2, 2, 8, 5.';
 
@@ -195,17 +194,13 @@ router.post('/submit', async (req, res) => {
   }
 });
 
-// POST /api/braintwist/level40/clue   { userId }
+// POST /api/braintwist/level40/clue   { userId }   free; usage is logged
 router.post('/clue', async (req, res) => {
   try {
     const { userId } = req.body || {};
     if (!userId) return res.status(400).json({ success: false, message: 'userId required' });
     const user = await ensureUser(userId);
-    if (user.hints < CLUE_COST) {
-      return res.json({ success: false, message: 'Not enough hints', hints: user.hints });
-    }
-    await pool.query('UPDATE bt_users SET hints = hints - ? WHERE user_id = ?', [CLUE_COST, userId]);
-    res.json({ success: true, clue: CLUE_TEXT, hints: user.hints - CLUE_COST });
+    res.json({ success: true, free: true, cost: 0, clue: CLUE_TEXT, hints: user.hints });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: 'Server error' });

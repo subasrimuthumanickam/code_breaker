@@ -85,4 +85,9 @@ async function spendHints(playerId, cost) {
   return rows[0] ? Number(rows[0].hints) : null;
 }
 
-module.exports = { ensureTables, csv, findOpenSession, createSession, getSession, saveBurn, addHintUsed, spendHints };
+async function getHints(playerId) {
+  const [rows] = await db.query('SELECT hints FROM bt_players WHERE id = ?', [playerId]);
+  return rows[0] ? Number(rows[0].hints) || 0 : 0;
+}
+
+module.exports = { ensureTables, csv, findOpenSession, createSession, getSession, saveBurn, addHintUsed, spendHints, getHints };

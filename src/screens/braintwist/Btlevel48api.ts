@@ -52,7 +52,10 @@ export async function checkLevel48(answer: number): Promise<CheckResult> {
   });
 }
 
-export async function fetchLevel48Hint(): Promise<string> {
-  const json = await request<{ data: { hint: string } }>('/hint');
+export async function fetchLevel48Hint(playerId: number | string): Promise<string> {
+  const json = await request<{ data: { hint: string } }>('/hint', {
+    method: 'POST',
+    body: JSON.stringify({ playerId }),
+  });
   return json.data.hint;
 }

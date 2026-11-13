@@ -1,367 +1,4 @@
 
-// import React, { useCallback, useEffect, useRef, useState } from 'react';
-// import { View, Text, TouchableOpacity, Animated, StyleSheet } from 'react-native';
-// import { F, INK, Stage, Coin } from './BTShared';
-// import { Icon } from './Art';
-// import { RoomBg15, VaultScene15 } from './Btlevel15art';
-// import * as api from './Btlevel15api';
-
-
-// // same light blue wall as Level 1 (if Level 1 uses another value, copy it here)
-// const SKY = '#b3d6f0';
-// const CREAM = '#fbf6e9';
-// const NAVY = '#10245e';
-
-// const Round = ({ n, onPress }: any) => (
-//   <TouchableOpacity onPress={onPress} style={st.round}>
-//     <Icon n={n} s={16} />
-//   </TouchableOpacity>
-// );
-
-// export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onComplete }: any) {
-//   const [session, setSession] = useState<api.L15Session | null>(null);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState('');
-//   const [typed, setTyped] = useState('');
-//   const [note, setNote] = useState('');
-//   const [opened, setOpened] = useState(false);
-//   const [busy, setBusy] = useState(false);
-//   const [clue, setClue] = useState('');
-//   const [showClues, setShowClues] = useState(false);
-
-//   const typedRef = useRef('');
-//   const busyRef = useRef(false);
-//   const doneRef = useRef(false);
-//   const noteTimer = useRef<any>(null);
-//   const shake = useRef(new Animated.Value(0)).current;
-//   const qIn = useRef(new Animated.Value(0)).current;
-
-//   const flash = (m: string) => {
-//     setNote(m);
-//     clearTimeout(noteTimer.current);
-//     noteTimer.current = setTimeout(() => setNote(''), 2200);
-//   };
-
-//   const doShake = () =>
-//     Animated.sequence([10, -10, 6, -6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 55, useNativeDriver: true }))).start();
-
-//   /* ---------- start (frontend -> backend -> db -> json) ---------- */
-
-//   const load = useCallback(async () => {
-//     setLoading(true);
-//     setError('');
-//     try {
-//       const s = await api.startLevel15(playerId);
-//       setSession(s);
-//       setHints?.(s.hints);
-//       typedRef.current = '';
-//       setTyped('');
-//       setOpened(false);
-//       doneRef.current = false;
-//       Animated.spring(qIn, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
-//     } catch (e: any) {
-//       setError(e?.message || 'Cannot load level 15');
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, [playerId]);
-
-//   useEffect(() => {
-//     load();
-//     return () => clearTimeout(noteTimer.current);
-//   }, [load]);
-
-//   /* ---------- push the vault -> paper appears ---------- */
-
-//   const onPush = async (): Promise<boolean> => {
-//     if (!session) return false;
-//     try {
-//       const s = await api.moveVault(session.sessionId, playerId);
-//       setSession(s);
-//       flash('A paper was hidden behind the vault!');
-//       return true;
-//     } catch (e: any) {
-//       flash(e?.message || 'Network error');
-//       return false;
-//     }
-//   };
-
-//   /* ---------- decoy: desk and books ---------- */
-
-//   const THING_MSG: any = { books: 'Just some books. Nothing inside.', desk: 'An ordinary desk.' };
-
-//   const onThing = async (target: 'books' | 'desk') => {
-//     if (!session || doneRef.current) return;
-//     flash(THING_MSG[target]);
-//     try {
-//       const r = await api.tapThing(session.sessionId, playerId, target);
-//       flash(r.message);
-//     } catch {
-//       /* local message is enough */
-//     }
-//   };
-
-//   /* ---------- keypad ---------- */
-
-//   const submit = async (code: string) => {
-//     if (!session || busyRef.current) return;
-//     busyRef.current = true;
-//     setBusy(true);
-//     try {
-//       const r = await api.enterCode(session.sessionId, playerId, code);
-//       if (r.correct) {
-//         doneRef.current = true;
-//         setOpened(true);
-//         flash(r.message);
-//         setTimeout(() => onComplete?.({ ...r, attempts: r.attempts ?? 1, skipped: false }), 1100);
-//       } else {
-//         doShake();
-//         flash(r.message);
-//         typedRef.current = '';
-//         setTyped('');
-//       }
-//     } catch (e: any) {
-//       flash(e?.message || 'Network error');
-//       typedRef.current = '';
-//       setTyped('');
-//     } finally {
-//       busyRef.current = false;
-//       setBusy(false);
-//     }
-//   };
-
-//   const onKey = (digit: string) => {
-//     if (!session || busyRef.current || doneRef.current) return;
-//     if (typedRef.current.length >= session.codeLength) return;
-//     typedRef.current += digit;
-//     setTyped(typedRef.current);
-//     if (typedRef.current.length === session.codeLength) submit(typedRef.current);
-//   };
-
-//   /* ---------- clue (free) / video / skip ---------- */
-
-//   // tap the search icon -> the clue modal opens directly, no hints are spent
-//   const hint = async () => {
-//     if (!session || doneRef.current) return;
-//     if (clue) {
-//       setShowClues(true);
-//       return;
-//     }
-//     try {
-//       const r: any = await api.buyHint(session.sessionId, playerId);
-//       setHints?.(r.hints);
-//       setClue(r.text || r.message);
-//       setShowClues(true);
-//     } catch (e: any) {
-//       flash(e?.message || 'Network error');
-//     }
-//   };
-
-//   const reward = async () => {
-//     try {
-//       const r = await api.rewardHints(playerId);
-//       setHints?.(r.hints);
-//       flash(`+${r.added} hints`);
-//     } catch (e: any) {
-//       flash(e?.message || 'Network error');
-//     }
-//   };
-
-//   const skip = async () => {
-//     if (!session || doneRef.current) return;
-//     try {
-//       const r = await api.skipLevel(session.sessionId, playerId);
-//       doneRef.current = true;
-//       setHints?.(r.hints);
-//       onComplete?.({ attempts: Math.max(1, session.wrongAttempts), skipped: true });
-//     } catch (e: any) {
-//       flash(e?.status === 402 ? 'Not enough hints' : e?.message || 'Network error');
-//     }
-//   };
-
-//   /* ---------- loading / error ---------- */
-
-//   if (loading || error || !session) {
-//     return (
-//       <Stage bg={SKY}>
-//         <View style={st.wall}>
-//           <RoomBg15 />
-//           <View style={st.center}>
-//             <Text style={st.load}>{error || 'Loading level 15...'}</Text>
-//             {!!error && (
-//               <>
-//                 <TouchableOpacity style={st.tryBtn} onPress={load}>
-//                   <Text style={st.tryTxt}>Try again</Text>
-//                 </TouchableOpacity>
-//                 <TouchableOpacity onPress={onExit}>
-//                   <Text style={st.back}>Back</Text>
-//                 </TouchableOpacity>
-//               </>
-//             )}
-//           </View>
-//         </View>
-//       </Stage>
-//     );
-//   }
-
-//   /* ---------- game ---------- */
-
-//   const qY = qIn.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] });
-
-//   return (
-//     <Stage bg={SKY}>
-//       <View style={st.wall}>
-//         <RoomBg15 />
-//         <View style={st.board}>
-//           {/* top bar */}
-//           <View style={st.top}>
-//             <View style={st.topL}>
-//               <Round n="home" onPress={onExit} />
-//               <Round n="gear" />
-//             </View>
-//             <View style={st.signWrap}>
-//               <View style={[st.string, { left: 26, transform: [{ rotate: '12deg' }] }]} />
-//               <View style={[st.string, { right: 26, transform: [{ rotate: '-12deg' }] }]} />
-//               <View style={st.sign}>
-//                 <View style={[st.leafTop, { left: -8, transform: [{ rotate: '-30deg' }] }]} />
-//                 <View style={[st.leafTop, { right: -8, transform: [{ rotate: '30deg' }] }]} />
-//                 <Text style={st.signt}>LEVEL 15</Text>
-//               </View>
-//             </View>
-//             <View style={st.topR}>
-//               <View style={st.bpill}>
-//                 <Text style={st.bpt}>{hints}</Text>
-//                 <View style={{ position: 'absolute', right: -14, top: -10 }}>
-//                   <Icon n="bulb" s={34} />
-//                 </View>
-//               </View>
-//             </View>
-//           </View>
-
-//           {/* question */}
-//           <Animated.View style={[st.qWrap, { opacity: qIn, transform: [{ translateY: qY }] }]}>
-//             <Text style={st.q}>We must open this vault.</Text>
-//           </Animated.View>
-
-//           {/* vault picture */}
-//           <Animated.View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 130, transform: [{ translateX: shake }] }}>
-//             <VaultScene15
-//               moved={session.vaultMoved}
-//               code={session.code}
-//               opened={opened}
-//               typed={typed}
-//               codeLength={session.codeLength}
-//               onKey={onKey}
-//               onThing={onThing}
-//               onPush={onPush}
-//               disabled={busy || opened}
-//             />
-//           </Animated.View>
-
-//           {/* clue / video / skip */}
-//           <View style={st.actions}>
-//             <View style={st.acol}>
-//               <TouchableOpacity style={st.hintBtn} onPress={hint}>
-//                 <Icon n="search" s={34} />
-//               </TouchableOpacity>
-//               <View style={st.lblRow}>
-//                 <Text style={st.lbl}>FREE</Text>
-//               </View>
-//             </View>
-//             <View style={st.acol}>
-//               <TouchableOpacity style={st.videoBtn} onPress={reward}>
-//                 <Icon n="film" s={40} />
-//               </TouchableOpacity>
-//               <View style={st.lblRow}>
-//                 <Coin s={12} />
-//                 <Text style={st.lbl}>+75</Text>
-//               </View>
-//             </View>
-//             <View style={st.acol}>
-//               <TouchableOpacity style={st.skipBtn} onPress={skip}>
-//                 <Icon n="play" s={36} />
-//               </TouchableOpacity>
-//               <View style={st.lblRow}>
-//                 <Icon n="bulb" s={14} />
-//                 <Text style={st.lbl}>50</Text>
-//               </View>
-//             </View>
-//           </View>
-
-//           {!!note && <Text style={st.note}>{note}</Text>}
-
-//           {/* clues modal */}
-//           {showClues && (
-//             <View style={st.overlay}>
-//               <View style={st.modal}>
-//                 <Text style={st.mTitle}>CLUES</Text>
-//                 <TouchableOpacity style={st.mClose} onPress={() => setShowClues(false)}>
-//                   <Text style={st.mCloseX}>✕</Text>
-//                 </TouchableOpacity>
-//                 <View style={st.clueCard}>
-//                   <View style={st.clueNum}>
-//                     <Text style={st.clueNumT}>1</Text>
-//                   </View>
-//                   <View style={{ flex: 1 }}>
-//                     <Text style={st.clueHead}>Clue 1</Text>
-//                     <Text style={st.clueBody}>{clue}</Text>
-//                   </View>
-//                 </View>
-//               </View>
-//             </View>
-//           )}
-//         </View>
-//       </View>
-//     </Stage>
-//   );
-// }
-
-// /* ---------- styles (same look as the Level 1 room) ---------- */
-
-// const st = StyleSheet.create({
-//   wall: { flex: 1, backgroundColor: SKY, overflow: 'hidden' },
-//   board: { flex: 1, alignItems: 'center', paddingTop: 30 },
-//   center: { position: 'absolute', left: 0, right: 0, top: '42%', alignItems: 'center', gap: 14 },
-//   load: { fontFamily: F, fontSize: 22, color: NAVY, textAlign: 'center', paddingHorizontal: 20 },
-//   tryBtn: { backgroundColor: '#a8e22a', borderWidth: 3, borderColor: INK, borderRadius: 30, paddingHorizontal: 36, paddingVertical: 10 },
-//   tryTxt: { fontFamily: F, fontSize: 24, fontWeight: '900', color: INK },
-//   back: { fontFamily: F, fontSize: 20, color: NAVY, textDecorationLine: 'underline' },
-
-//   round: { width: 30, height: 30, borderRadius: 15, backgroundColor: '#ffe27a', borderWidth: 2, borderColor: INK, alignItems: 'center', justifyContent: 'center' },
-//   top: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginTop: 6, paddingHorizontal: 8, width: '100%' },
-//   topL: { flexDirection: 'row', gap: 6, minWidth: 80, marginTop: 10 },
-//   topR: { minWidth: 80, alignItems: 'flex-end', marginTop: 14, paddingRight: 14 },
-//   signWrap: { alignItems: 'center', paddingTop: 14 },
-//   string: { position: 'absolute', top: -6, width: 2, height: 22, backgroundColor: '#9a6a3a' },
-//   sign: { flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: '#a8601f', borderWidth: 3, borderColor: '#d98b3d', borderRadius: 8, paddingHorizontal: 14, paddingVertical: 6, elevation: 6, shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 4, shadowOffset: { width: 0, height: 3 } },
-//   leafTop: { position: 'absolute', top: -12, width: 16, height: 24, borderRadius: 12, backgroundColor: '#5fae3a' },
-//   signt: { fontFamily: F, fontSize: 22, fontWeight: 'bold', color: '#fff' },
-//   bpill: { backgroundColor: '#fff', borderRadius: 16, height: 30, minWidth: 58, paddingLeft: 12, paddingRight: 18, justifyContent: 'center', borderWidth: 2, borderColor: '#e6e6e6' },
-//   bpt: { fontFamily: F, fontSize: 18, fontWeight: 'bold', color: INK },
-//   qWrap: { backgroundColor: CREAM, borderRadius: 30, paddingHorizontal: 22, paddingVertical: 10, marginTop: 22, elevation: 4, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 4, shadowOffset: { width: 0, height: 2 } },
-//   q: { fontFamily: F, fontSize: 22, fontWeight: 'bold', color: NAVY, textAlign: 'center' },
-
-//   actions: { position: 'absolute', left: 0, right: 0, bottom: 34, flexDirection: 'row', justifyContent: 'center', alignItems: 'flex-start', gap: 34 },
-//   acol: { alignItems: 'center' },
-//   lblRow: { flexDirection: 'row', alignItems: 'center', gap: 4, height: 26, marginTop: 6, paddingHorizontal: 12, borderRadius: 13, backgroundColor: '#6b4423' },
-//   lbl: { fontFamily: F, fontSize: 15, fontWeight: 'bold', color: '#fff' },
-//   hintBtn: { width: 66, height: 66, borderRadius: 33, backgroundColor: '#a8e22a', borderWidth: 4, borderColor: '#d6f58a', alignItems: 'center', justifyContent: 'center', elevation: 6 },
-//   videoBtn: { width: 66, height: 66, borderRadius: 33, backgroundColor: '#f3efe2', borderWidth: 4, borderColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 6 },
-//   skipBtn: { width: 66, height: 66, borderRadius: 33, backgroundColor: '#f0484f', borderWidth: 4, borderColor: '#fff', alignItems: 'center', justifyContent: 'center', elevation: 6 },
-//   note: { position: 'absolute', bottom: 6, alignSelf: 'center', fontFamily: F, fontSize: 17, fontWeight: 'bold', color: '#c0392b', textAlign: 'center', paddingHorizontal: 12 },
-
-//   /* clues modal */
-//   overlay: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(16,36,94,0.45)', alignItems: 'center', justifyContent: 'center', zIndex: 50, elevation: 50, paddingHorizontal: 16 },
-//   modal: { width: '100%', maxWidth: 360, backgroundColor: '#fbf1de', borderWidth: 5, borderColor: '#e8912d', borderRadius: 28, padding: 18, paddingTop: 16 },
-//   mTitle: { fontFamily: F, fontSize: 26, fontWeight: 'bold', color: NAVY, textAlign: 'center', marginBottom: 14 },
-//   mClose: { position: 'absolute', right: -6, top: -6, width: 38, height: 38, borderRadius: 19, backgroundColor: '#ffe27a', borderWidth: 3, borderColor: INK, alignItems: 'center', justifyContent: 'center' },
-//   mCloseX: { fontSize: 18, fontWeight: 'bold', color: '#e0453a' },
-//   clueCard: { flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fdf6e8', borderWidth: 2, borderColor: '#4cc46a', borderRadius: 22, padding: 14 },
-//   clueNum: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#c26a22', alignItems: 'center', justifyContent: 'center' },
-//   clueNumT: { fontFamily: F, fontSize: 28, fontWeight: 'bold', color: '#fff' },
-//   clueHead: { fontFamily: F, fontSize: 18, fontWeight: 'bold', color: '#c26a22' },
-//   clueBody: { fontSize: 17, fontStyle: 'italic', color: NAVY, marginTop: 2 },
-// });
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, Animated, Easing, StyleSheet, Platform,
@@ -371,6 +8,7 @@ import { F, Stage, Coin } from './BTShared';
 import { Icon } from './Art';
 import { VaultScene15 } from './Btlevel15art';
 import * as api from './Btlevel15api';
+import * as mainApi from './api';
 import { play } from './BTSound';
 
 const FONT: any = F;
@@ -392,6 +30,9 @@ const BADGE = '#6b4423';
 const GREEN_OK = '#3ec45a';
 const YEL_BTN = '#fbc02d';
 const YEL_BTN_D = '#d98e1c';
+
+// clue shown in the CLUES popup after the backend records the free hint request
+const CLUE_1 = 'Try changing the position of the object.';
 
 /* ---------- garden background (same as Level 9) ---------- */
 function Flower({ x, y, s = 1 }: any) {
@@ -553,6 +194,51 @@ function DoubleArrow({ s }: { s: number }) {
   );
 }
 
+/* ---------- big "vault opens" animation shown when the code is right ---------- */
+const VW = 240;   // vault width
+const VH = 210;   // vault height
+
+function VaultOpenOverlay({ anim }: { anim: Animated.Value }) {
+  // door swings open around its left hinge
+  const doorRot = anim.interpolate({ inputRange: [0, 0.6, 1], outputRange: ['0deg', '-70deg', '-100deg'] });
+  const doorOp = anim.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0.55] });
+  const glow = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.3, 1] });
+  const cardScale = anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.7, 1.05, 1] });
+  const txtOp = anim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0, 0, 1] });
+  const txtY = anim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] });
+
+  return (
+    <View style={st.openOverlay} pointerEvents="auto">
+      <Animated.View style={[st.openCard, { opacity: anim.interpolate({ inputRange: [0, 0.15], outputRange: [0, 1], extrapolate: 'clamp' }), transform: [{ scale: cardScale }] }]}>
+        {/* vault body + inside */}
+        <View style={st.vaultBody}>
+          <View style={st.vaultInside}>
+            <Animated.View style={[st.vaultGlow, { opacity: glow }]} />
+            {/* gold bars */}
+            <View style={[st.gold, { left: 24, bottom: 18, width: 56 }]} />
+            <View style={[st.gold, { left: 86, bottom: 18, width: 56 }]} />
+            <View style={[st.gold, { left: 55, bottom: 44, width: 56 }]} />
+            <View style={[st.gold, { left: 118, bottom: 44, width: 40 }]} />
+            <View style={[st.gold, { left: 86, bottom: 70, width: 50 }]} />
+          </View>
+
+          {/* door (pivots on the left edge) */}
+          <Animated.View style={[st.vaultDoor, {
+            opacity: doorOp,
+            transform: [{ perspective: 700 }, { translateX: -VW / 2 + 14 }, { rotateY: doorRot }, { translateX: VW / 2 - 14 }],
+          }]}>
+            <View style={st.dialOuter}><View style={st.dialMid}><View style={st.dialIn} /></View></View>
+            <View style={[st.handleBar, { top: 40 }]} />
+            <View style={[st.handleBar, { bottom: 40 }]} />
+          </Animated.View>
+        </View>
+
+        <Animated.Text style={[st.openTxt, { opacity: txtOp, transform: [{ translateY: txtY }] }]}>VAULT OPENED!</Animated.Text>
+      </Animated.View>
+    </View>
+  );
+}
+
 /* =========================================================
    SCREEN
 ========================================================= */
@@ -565,7 +251,6 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
   const [note, setNote] = useState('');
   const [opened, setOpened] = useState(false);
   const [busy, setBusy] = useState(false);
-  const [clue, setClue] = useState('');
   const [showClues, setShowClues] = useState(false);
 
   const typedRef = useRef('');
@@ -575,6 +260,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
   const shake = useRef(new Animated.Value(0)).current;
   const qIn = useRef(new Animated.Value(0)).current;
   const sway = useRef(new Animated.Value(0)).current;
+  const openAnim = useRef(new Animated.Value(0)).current;   // vault-open animation (0 closed -> 1 open)
 
   const flash = (m: string) => {
     setNote(m);
@@ -608,6 +294,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
       typedRef.current = '';
       setTyped('');
       setOpened(false);
+      openAnim.setValue(0);
       doneRef.current = false;
       Animated.spring(qIn, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
     } catch (e: any) {
@@ -667,7 +354,9 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
         doneRef.current = true;
         setOpened(true);
         flash(r.message);
-        setTimeout(() => onComplete?.({ ...r, attempts: r.attempts ?? 1, skipped: false }), 1100);
+        // show the vault opening clearly, then continue
+        Animated.timing(openAnim, { toValue: 1, duration: 1400, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
+        setTimeout(() => onComplete?.({ ...r, attempts: r.attempts ?? 1, skipped: false }), 2800);
       } else {
         play('wrong');
         doShake();
@@ -696,21 +385,19 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
 
   /* ---------- clue (free) / video / skip ---------- */
 
-  // tap the search icon -> the clue modal opens directly, no hints are spent
+  // tap the search icon -> record the free hint before opening the clue popup
   const hint = async () => {
-    if (!session || doneRef.current) return;
+    if (doneRef.current || busyRef.current) return;
     play('clue');
-    if (clue) {
-      setShowClues(true);
-      return;
-    }
+    busyRef.current = true;
     try {
-      const r: any = await api.buyHint(session.sessionId, playerId);
-      setHints?.(r.hints);
-      setClue(r.text || r.message);
+      const r = await mainApi.recordHintUse(15, playerId);
+      if (typeof r.hints === 'number') setHints?.(r.hints);
       setShowClues(true);
     } catch (e: any) {
-      flash(e?.message || 'Network error');
+      flash(e?.message || 'Could not load hint');
+    } finally {
+      busyRef.current = false;
     }
   };
 
@@ -818,7 +505,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
         </Animated.View>
 
         {/* vault picture */}
-        <Animated.View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 170, transform: [{ translateX: shake }] }}>
+        <Animated.View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 135, transform: [{ translateX: shake }] }}>
           <VaultScene15
             moved={session.vaultMoved}
             code={session.code}
@@ -832,37 +519,40 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
           />
         </Animated.View>
 
-        {/* bottom wooden panel (same as Level 9) */}
+        {/* bottom wooden panel (smaller, same as Level 13) */}
         <View style={st.panel}>
-          <View style={[st.plank, { top: 18, left: 34, right: 34 }]} />
-          <View style={[st.plank, { top: 76, left: 26, right: 26 }]} />
-          <View style={[st.plank, { bottom: 16, left: 34, right: 34 }]} />
-          <View style={[st.screw, { left: 16, top: 16 }]} />
-          <View style={[st.screw, { right: 16, top: 16 }]} />
-          <View style={[st.screw, { left: 16, bottom: 16 }]} />
-          <View style={[st.screw, { right: 16, bottom: 16 }]} />
+          <View style={[st.plank, { top: 14, left: 28, right: 28 }]} />
+          <View style={[st.plank, { top: 56, left: 22, right: 22 }]} />
+          <View style={[st.plank, { bottom: 12, left: 28, right: 28 }]} />
+          <View style={[st.screw, { left: 12, top: 12 }]} />
+          <View style={[st.screw, { right: 12, top: 12 }]} />
+          <View style={[st.screw, { left: 12, bottom: 12 }]} />
+          <View style={[st.screw, { right: 12, bottom: 12 }]} />
 
           <View style={st.btnCol}>
             <TouchableOpacity style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }]} activeOpacity={0.85} onPress={hint}>
-              <Icon n="search" s={40} />
+              <Icon n="search" s={28} />
             </TouchableOpacity>
             <View style={st.badge}><Text style={st.badgeT}>FREE</Text></View>
           </View>
 
           <View style={st.btnCol}>
             <TouchableOpacity style={[st.circleBtn, { backgroundColor: '#f7ebd4', borderColor: '#fbf3e3' }]} activeOpacity={0.85} onPress={reward}>
-              <Icon n="film" s={46} />
+              <Icon n="film" s={32} />
             </TouchableOpacity>
-            <View style={st.badge}><Coin s={15} /><Text style={st.badgeT}>+75</Text></View>
+            <View style={st.badge}><Coin s={12} /><Text style={st.badgeT}>+75</Text></View>
           </View>
 
           <View style={st.btnCol}>
             <TouchableOpacity style={[st.circleBtn, { backgroundColor: RED, borderColor: '#fbf3e3' }]} activeOpacity={0.85} onPress={skip}>
-              <DoubleArrow s={42} />
+              <DoubleArrow s={30} />
             </TouchableOpacity>
-            <View style={st.badge}><Icon n="bulb" s={19} /><Text style={st.badgeT}>50</Text></View>
+            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>50</Text></View>
           </View>
         </View>
+
+        {/* vault opens (shown after the right code) */}
+        {opened && <VaultOpenOverlay anim={openAnim} />}
 
         {/* CLUES popup */}
         {showClues && (
@@ -877,7 +567,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
                 <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
                 <View style={{ flex: 1 }}>
                   <Text style={st.clueHead}>Hint 1</Text>
-                  <Text style={st.clueBody}>{clue}</Text>
+                  <Text style={st.clueBody}>{CLUE_1}</Text>
                 </View>
               </View>
             </View>
@@ -889,7 +579,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
 }
 
 /* =========================================================
-   STYLES (same as Level 9)
+   STYLES
 ========================================================= */
 
 const st = StyleSheet.create({
@@ -907,28 +597,28 @@ const st = StyleSheet.create({
   sign: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, height: 44, borderRadius: 6, backgroundColor: '#bd6b29', borderWidth: 3, borderColor: WOOD_DD, elevation: 3 },
   signT: { fontFamily: FONT, fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
   signArrow: { fontFamily: FONT, fontSize: 22, fontWeight: '900', color: '#ffc533' },
-  pillWrap: { minWidth: 100, height: 44, justifyContent: 'center' },
-  pill: { height: 32, borderRadius: 16, backgroundColor: CREAM, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#d8c8a8', justifyContent: 'center', paddingLeft: 18, paddingRight: 30, elevation: 3 },
-  pillT: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#1b1b1b' },
-  pillIcon: { position: 'absolute', right: -6, top: -4 },
+  pillWrap: { position: 'relative', minWidth: 88, height: 36, justifyContent: 'center' },
+  pill: { height: 28, borderRadius: 14, backgroundColor: CREAM, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#d8c8a8', justifyContent: 'center', paddingLeft: 14, paddingRight: 26, elevation: 3 },
+  pillT: { fontFamily: FONT, fontSize: 18, fontWeight: '900', color: '#1b1b1b' },
+  pillIcon: { position: 'absolute', right: -5, top: -3 },
 
   qWrap: { alignItems: 'center', marginTop: 12, paddingHorizontal: 12 },
   qPill: { flexDirection: 'row', alignItems: 'center', gap: 10, backgroundColor: CREAM, borderRadius: 32, borderWidth: 2.5, borderColor: CREAM_BORDER, paddingVertical: 10, paddingHorizontal: 18, maxWidth: 380, elevation: 3 },
   qArrow: { fontFamily: FONT, fontSize: 26, fontWeight: '900', color: ARROW },
   q: { flexShrink: 1, fontFamily: SERIF, fontSize: 18, fontStyle: 'italic', color: '#17307a', textAlign: 'center' },
 
-  // bottom wooden panel (solid wood, plank lines, corner rivets)
+  // bottom wooden panel (smaller: solid wood, plank lines, corner rivets)
   panel: {
-    position: 'absolute', left: 14, right: 14, bottom: 18, height: 148, borderRadius: 46,
-    backgroundColor: WOOD, borderWidth: 6, borderColor: WOOD_D,
-    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-around', paddingTop: 20, elevation: 6,
+    position: 'absolute', left: 14, right: 14, bottom: 14, height: 116, borderRadius: 34,
+    backgroundColor: WOOD, borderWidth: 5, borderColor: WOOD_D,
+    flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-around', paddingTop: 10, elevation: 6,
   },
-  plank: { position: 'absolute', height: 2.5, borderRadius: 2, backgroundColor: '#d58f3a', opacity: 0.7 },
-  screw: { position: 'absolute', width: 9, height: 9, borderRadius: 5, backgroundColor: WOOD_DD },
+  plank: { position: 'absolute', height: 2, borderRadius: 2, backgroundColor: '#d58f3a', opacity: 0.7 },
+  screw: { position: 'absolute', width: 7, height: 7, borderRadius: 4, backgroundColor: WOOD_DD },
   btnCol: { alignItems: 'center' },
-  circleBtn: { width: 80, height: 80, borderRadius: 40, borderWidth: 7, alignItems: 'center', justifyContent: 'center', elevation: 6 },
-  badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, marginTop: 8, minWidth: 76, paddingHorizontal: 12, height: 32, borderRadius: 16, backgroundColor: BADGE },
-  badgeT: { fontFamily: FONT, fontSize: 17, fontWeight: '900', color: '#fff' },
+  circleBtn: { width: 60, height: 60, borderRadius: 30, borderWidth: 5, alignItems: 'center', justifyContent: 'center', elevation: 6 },
+  badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
+  badgeT: { fontFamily: FONT, fontSize: 14, fontWeight: '900', color: '#fff' },
 
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.5)', alignItems: 'center', justifyContent: 'center', zIndex: 50, elevation: 50 },
   clueCard: { width: '86%', maxWidth: 360, backgroundColor: CREAM, borderColor: WOOD_D, borderWidth: 6, borderRadius: 28, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 10 },
@@ -940,4 +630,18 @@ const st = StyleSheet.create({
   clueNumT: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: '#fff' },
   clueHead: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#bd6b29' },
   clueBody: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', marginTop: 2 },
+
+  /* vault-open overlay */
+  openOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.55)', alignItems: 'center', justifyContent: 'center', zIndex: 60, elevation: 60 },
+  openCard: { alignItems: 'center' },
+  vaultBody: { width: VW, height: VH, borderRadius: 14, backgroundColor: '#9a9a90', borderWidth: 5, borderColor: '#4b4b44', padding: 12 },
+  vaultInside: { flex: 1, borderRadius: 8, backgroundColor: '#23232b', overflow: 'hidden' },
+  vaultGlow: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(255,214,90,0.45)' },
+  gold: { position: 'absolute', height: 26, borderRadius: 5, backgroundColor: '#f5c518', borderWidth: 2.5, borderColor: '#b8860b' },
+  vaultDoor: { position: 'absolute', left: 14, top: 14, width: VW - 28 - 10, height: VH - 28 - 10, borderRadius: 8, backgroundColor: '#b9b9ae', borderWidth: 4, borderColor: '#4b4b44', alignItems: 'center', justifyContent: 'center' },
+  dialOuter: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#8f8f85', borderWidth: 3, borderColor: '#3a3a35', alignItems: 'center', justifyContent: 'center' },
+  dialMid: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#a8a89d', borderWidth: 3, borderColor: '#3a3a35', alignItems: 'center', justifyContent: 'center' },
+  dialIn: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#5a5a52' },
+  handleBar: { position: 'absolute', left: -10, width: 14, height: 32, borderRadius: 3, backgroundColor: '#8f8f85', borderWidth: 2, borderColor: '#3a3a35' },
+  openTxt: { marginTop: 22, fontFamily: FONT, fontSize: 34, fontWeight: '900', color: '#ffe066', letterSpacing: 1, textShadowColor: '#000', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
 });

@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 
     res.json({
       level: cfg.level_number,
-      hintCost: cfg.hint_cost,
+      hintCost: 0,
       skipCost: cfg.skip_cost,
       stages: stages.map((s) => ({
         stage: s.stage_number,
@@ -80,7 +80,7 @@ router.post('/hint', async (req, res) => {
     const row = await db.getStage(Number(stage));
     if (!row) return res.status(404).json({ error: 'Stage not found' });
     await db.addHintUsed(String(userId));
-    res.json({ hint: row.hint_text, cost: cfg.hint_cost });
+    res.json({ success: true, free: true, hint: row.hint_text, cost: 0 });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: 'Server error' });

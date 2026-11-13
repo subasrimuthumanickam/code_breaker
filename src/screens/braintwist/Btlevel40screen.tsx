@@ -4,7 +4,6 @@ import { View, Text, TouchableOpacity, StyleSheet, Animated, Alert } from 'react
 import Btlevel40art from './Btlevel40art';
 import { submitAnswer, getClue, skipLevel } from './Btlevel40api';
 
-const CLUE_COST = 25;
 const SKIP_COST = 50;
 
 /* ---------- room theme pieces ---------- */
@@ -116,7 +115,6 @@ export default function Btlevel40screen({ playerId, hints, setHints, onExit, onC
 
   const onClue = async () => {
     if (busy.current || done) return;
-    if (bal < CLUE_COST) return flash('Need ' + CLUE_COST + ' hints. You have ' + bal + '.');
     busy.current = true;
     try {
       const res = await getClue(String(playerId));
@@ -208,7 +206,7 @@ export default function Btlevel40screen({ playerId, hints, setHints, onExit, onC
       {/* bottom bar: Hint (search) + Skip */}
       <View style={styles.bottomBar}>
         <View style={styles.action}>
-          <Text style={styles.cost}>💡 x{CLUE_COST}</Text>
+          <Text style={styles.cost}>FREE</Text>
           <TouchableOpacity style={[styles.actionBtn, { backgroundColor: '#BDEBFF' }]} onPress={onClue}>
             <Text style={styles.actionIcon}>🔍</Text>
           </TouchableOpacity>

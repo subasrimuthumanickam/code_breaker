@@ -570,19 +570,13 @@ r.post('/hint', handle(async (req, res) => {
   // clue already bought in this game -> free
   if (await L8.hasHint(sessionId)) return already();
 
-  // claim first (unique key stops double-charging on double taps)
-  const claimed = await L8.claimHint(sessionId, playerId, COST_HINT);
+  // Claim once per session so a repeated tap does not create duplicate state.
+  const claimed = await L8.claimHint(sessionId, playerId, 0);
   if (!claimed) return already();
-
-  const hints = await L8.spendHints(playerId, COST_HINT);
-  if (hints === null) {
-    await L8.releaseHint(sessionId);   // not enough hints -> undo
-    return bad(res, 402, 'not_enough_hints', 'Not enough hints');
-  }
 
   await L8.markHintUsed(sessionId);
 
-  res.json({ success: true, hints, cost: COST_HINT, alreadyUsed: false, clue: CLUE });
+  res.json({ success: true, free: true, hints: await L8.getHints(playerId), cost: 0, alreadyUsed: false, clue: CLUE });
 }));
 
 /* ---------------------------------------------------------

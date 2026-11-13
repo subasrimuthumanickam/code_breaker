@@ -421,11 +421,6 @@ r.post('/hint', handle(async (req, res) => {
     });
   }
 
-  const newBalance = await spendHints(playerId, HINT_COST);
-  if (newBalance === null) {
-    return bad(res, 402, 'not_enough_hints', `Need ${HINT_COST} hints. You have ${await getHints(playerId)}.`);
-  }
-
   const prefix = PUZZLE.answer.slice(0, revealed + 1);
 
   await db.query(
@@ -436,9 +431,11 @@ r.post('/hint', handle(async (req, res) => {
 
   res.json({
     success: true,
-    charged: true,
+    free: true,
+    charged: false,
+    cost: 0,
     prefix,
-    hints: newBalance,
+    hints: await getHints(playerId),
     message: `Hint: it starts with "${prefix}"`,
   });
 }));

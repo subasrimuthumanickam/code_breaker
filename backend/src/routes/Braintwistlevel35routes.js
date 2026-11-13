@@ -345,15 +345,13 @@ router.post('/hint', async (req, res) => {
     }
 
     await db.getProgress(playerId);
-    const spent = await db.spendHints(playerId, db.QUESTION.hintCost);
-    if (!spent.ok) {
-      return res.status(402).json({ success: false, hints: spent.hints, error: spent.message });
-    }
     const used = await db.markHintUsed(playerId);
 
     res.json({
       success: true,
-      hints: spent.hints,
+      free: true,
+      cost: 0,
+      hints: await db.getHints(playerId),
       hint: { text: db.hintText(used) },
     });
   } catch (e) {

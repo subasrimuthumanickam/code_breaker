@@ -438,26 +438,22 @@ r.post('/hint', handle(async (req, res) => {
       ? sent
       : start;
 
-  // try to take 25 hints; null = the player does not have enough
-  const paid = await L10.spendHints(playerId, COST_HINT);
-  const charged = paid !== null;
-  const hints = charged ? paid : await L10.getHints(playerId);
-
-  if (charged) await L10.markHintUsed(sessionId);
+  const hints = await L10.getHints(playerId);
+  await L10.markHintUsed(sessionId);
 
   // save this clue request in the database
-  await L10.logHint(sessionId, playerId, current, charged, hints);
+  await L10.logHint(sessionId, playerId, current, false, hints);
 
-  // the swipe arrow is only for players who paid
-  const dir = charged ? G.solveDir(current) || G.solveDir(start) : null;
+  const dir = G.solveDir(current) || G.solveDir(start);
 
   res.json({
     success: true,
     clue: CLUE_TEXT,
     dir,
     hints,
-    charged,
-    cost: charged ? COST_HINT : 0,
+    free: true,
+    charged: false,
+    cost: 0,
   });
 }));
 

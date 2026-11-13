@@ -6,7 +6,7 @@ const LEVEL_NO = 34;
 const QUESTION = {
   text:
     'A boy and a doctor are fishing. The boy is the doctor\u2019s son. However the doctor is not the boy\u2019s father. Who is the Doctor?',
-  hintCost: 25,
+  hintCost: 0,
   skipCost: 50,
   videoReward: 75,
   reward: 10,

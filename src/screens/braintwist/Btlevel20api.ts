@@ -1,47 +1,4 @@
-// // src/screens/braintwist/Btlevel20api.ts
 
-// // TODO: copy the same BASE url line that Btlevel19api.ts uses
-// const BASE = 'http://YOUR_SERVER_IP:4000/api/braintwist/level20';
-
-// export type Level20Option = { key: 'A' | 'B' | 'C' | 'D'; label: string };
-
-// export type Level20StartResponse = {
-//   success: boolean;
-//   sessionId: number;
-//   attempts: number;
-//   question: { text: string; options: Level20Option[] };
-// };
-
-// export type Level20AnswerResponse = {
-//   success: boolean;
-//   correct?: boolean;
-//   attempts?: number;
-//   correctKey?: string;
-//   explanation?: string;
-//   error?: string;
-// };
-
-// async function post<T>(path: string, body: object): Promise<T> {
-//   const res = await fetch(`${BASE}${path}`, {
-//     method: 'POST',
-//     headers: { 'Content-Type': 'application/json' },
-//     body: JSON.stringify(body),
-//   });
-//   const json = await res.json();
-//   if (!res.ok) throw new Error(json.error || 'Request failed');
-//   return json as T;
-// }
-
-// export const startLevel20 = (playerId: number) =>
-//   post<Level20StartResponse>('/start', { playerId });
-
-// export const submitLevel20Answer = (playerId: number, sessionId: number, choice: string) =>
-//   post<Level20AnswerResponse>('/answer', { playerId, sessionId, choice });
-// src/screens/braintwist/Btlevel20api.ts
-
-// Server address: reuse the SAME address your other levels use (exported from ./api).
-// Common export names are tried automatically. To force one, set FORCE_API_ORIGIN,
-// e.g. 'http://192.168.1.10:4000' (no /api at the end).
 import * as shared from './api';
 
 const FORCE_API_ORIGIN: string | null = null;

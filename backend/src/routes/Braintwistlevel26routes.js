@@ -428,12 +428,8 @@ router.post('/hint', (req, res) => {
   const pid = pidOf(req);
   if (pid === null) return fail(res, 400, 'playerId is required');
 
-  const bal = getHints(pid);
-  if (bal < HINT_COST) return fail(res, 402, 'Not enough hints');
-
   const s = sessions.get(Number(req.body.sessionId));
   if (s) s.hintsUsed += 1;
-  setHints(pid, bal - HINT_COST);
 
   // find a cloud that still hides the sun and say which way to push it
   const now = Array.isArray(req.body.clouds) ? req.body.clouds : CLOUDS;
@@ -448,7 +444,7 @@ router.post('/hint', (req, res) => {
     }
   }
 
-  res.json({ hints: bal - HINT_COST, clue: CLUE, target, dir });
+  res.json({ success: true, free: true, cost: 0, hints: getHints(pid), clue: CLUE, target, dir });
 });
 
 // ---------------------------------------------------------------------------

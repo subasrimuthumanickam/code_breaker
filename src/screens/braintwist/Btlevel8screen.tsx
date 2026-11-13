@@ -1202,9 +1202,6 @@ const YEL_BTN_D = '#d98e1c';
 // thickness of the wooden room frame (the room / touch maths uses this)
 const FW = 8;
 
-// must match COST_HINT in the backend (the backend is the one that really charges)
-const HINT_COST = 25;
-
 type Props = {
   playerId: number;
   hints?: number;
@@ -1585,18 +1582,10 @@ export default function BTLevel8Screen({ playerId, hints = 0, setHints, onExit, 
     },
   })).current;
 
-  // magnifier: ask the backend. It charges HINT_COST once per game, saves that in the
-  // database, and sends the clue text back (free if already bought).
+  // Ask the backend for the clue; hints do not consume the player's balance.
   const onHint = async () => {
     if (done || !sessionId) return;
     setConfirmSkip(false);
-
-    // not bought yet and cannot afford it
-    if (!clueUsed && hints < HINT_COST) {
-      play('wrong');
-      flash(`You need ${HINT_COST} hints. Watch a video to earn more!`);
-      return;
-    }
 
     try {
       const r = await hintLevel8({ sessionId, playerId });
@@ -1606,8 +1595,7 @@ export default function BTLevel8Screen({ playerId, hints = 0, setHints, onExit, 
       play('clue'); // CLUE sound
       setClueOpen(true);
     } catch (e: any) {
-      const noFunds = e?.status === 402 || /not enough|payment/i.test(e?.message || '');
-      flash(noFunds ? `You need ${HINT_COST} hints. Watch a video to earn more!` : e?.message || 'Network error');
+      flash(e?.message || 'Network error');
     }
   };
 
@@ -1768,12 +1756,12 @@ export default function BTLevel8Screen({ playerId, hints = 0, setHints, onExit, 
 
           <View style={st.btnCol}>
             <TouchableOpacity
-              style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }, (!clueUsed && hints < HINT_COST) && { opacity: 0.5 }]}
+              style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }]}
               activeOpacity={0.85} onPress={onHint}
             >
               <Icon n="search" s={31} />
             </TouchableOpacity>
-            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>{HINT_COST}</Text></View>
+            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>FREE</Text></View>
           </View>
 
           <View style={st.btnCol}>

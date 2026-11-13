@@ -39,15 +39,23 @@ router.post("/submit", async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-// POST /api/braintwist/level38/search -> first hint  (cost is charged by the existing hint api)
+// POST /api/braintwist/level38/search -> first free hint
 router.post("/search", async (req, res, next) => {
-  try { const lv = await db.getLevel(); res.json({ success: true, text: lv.hint1 }); }
+  try {
+    if (!req.body?.playerId) return res.status(400).json({ success: false, error: "playerId required" });
+    const lv = await db.getLevel();
+    res.json({ success: true, free: true, cost: 0, text: lv.hint1 });
+  }
   catch (e) { next(e); }
 });
 
 // POST /api/braintwist/level38/clue -> second (stronger) hint
 router.post("/clue", async (req, res, next) => {
-  try { const lv = await db.getLevel(); res.json({ success: true, text: lv.hint2 }); }
+  try {
+    if (!req.body?.playerId) return res.status(400).json({ success: false, error: "playerId required" });
+    const lv = await db.getLevel();
+    res.json({ success: true, free: true, cost: 0, text: lv.hint2 });
+  }
   catch (e) { next(e); }
 });
 

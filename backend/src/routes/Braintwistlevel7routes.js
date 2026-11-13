@@ -930,17 +930,13 @@ r.post('/hint', handle(async (req, res) => {
   // clue already bought for this stage -> free
   if (await L7.hasHint(sessionId, stage)) return already();
 
-  // claim first (unique key stops double-charging on double taps)
-  const claimed = await L7.claimHint(sessionId, playerId, stage, HINT_COST);
+  // Claim once per stage so a repeated tap does not create duplicate state.
+  const claimed = await L7.claimHint(sessionId, playerId, stage, 0);
   if (!claimed) return already();
 
-  const hints = await L7.spendHints(playerId, HINT_COST);
-  if (hints === null) {
-    await L7.releaseHint(sessionId, stage);   // not enough hints -> undo
-    return bad(res, 402, 'not_enough_hints', 'Not enough hints');
-  }
+  const hints = await L7.getHints(playerId);
 
-  res.json({ success: true, stage, hints, cost: HINT_COST, alreadyUsed: false, clue });
+  res.json({ success: true, free: true, stage, hints, cost: 0, alreadyUsed: false, clue });
 }));
 
 /* ---------------- GET /status/:playerId ---------------- */

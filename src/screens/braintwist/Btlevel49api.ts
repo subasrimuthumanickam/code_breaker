@@ -54,10 +54,10 @@ export const submitLevel49Answer = (playerId: string, guess: string) =>
     body: JSON.stringify({ playerId, guess }),
   });
 
-export const requestLevel49Clue = (playerId: string, hints: number, revealed: number[]) =>
+export const requestLevel49Clue = (playerId: string, revealed: number[]) =>
   request<{ ok: boolean; index?: number; letter?: string; cost?: number; error?: string }>('/clue', {
     method: 'POST',
-    body: JSON.stringify({ playerId, hints, revealed }),
+    body: JSON.stringify({ playerId, revealed }),
   });
 
 export const requestLevel49Skip = (playerId: string, hints: number) =>

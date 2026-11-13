@@ -49,12 +49,12 @@ router.post('/check', async (req, res) => {
   }
 });
 
-// GET /hint -> hint text
-router.get('/hint', async (req, res) => {
+// POST /hint { playerId } -> hint text and persisted usage through server middleware
+router.post('/hint', async (req, res) => {
   try {
     const lv = await getLevel48();
     if (!lv) return res.status(404).json({ success: false, message: 'Level not found' });
-    res.json({ success: true, data: { hint: lv.hint || '' } });
+    res.json({ success: true, free: true, cost: 0, data: { hint: lv.hint || '' } });
   } catch (e) {
     console.error(e);
     res.status(500).json({ success: false, message: 'Server error' });

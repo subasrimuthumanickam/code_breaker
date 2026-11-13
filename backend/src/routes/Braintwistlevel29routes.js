@@ -280,7 +280,7 @@ async function start(req, res) {
       level: db.LEVEL,
       question: puzzle.question,
       spots: puzzle.spots,
-      hintCost: db.HINT_COST,
+      hintCost: 0,
       skipCost: db.SKIP_COST,
       videoReward: db.VIDEO_REWARD,
       hints,
@@ -320,18 +320,14 @@ router.post('/answer', async (req, res) => {
   }
 });
 
-// HINT (25 hints)
+// HINT (free; usage is recorded in the database)
 router.post('/hint', async (req, res) => {
   try {
     const playerId = pid(req);
     if (!playerId) return fail(res, 400, 'playerId required');
-    const hints = await db.spendHints(playerId, db.HINT_COST);
-    if (hints === null) {
-      return res.status(402).json({ success: false, error: 'Not enough hints', hints: await db.getHints(playerId) });
-    }
     await db.markHint(playerId);
     const puzzle = await db.getPuzzle();
-    res.json({ success: true, hints, hint: { text: puzzle.hint } });
+    res.json({ success: true, free: true, cost: 0, hints: await db.getHints(playerId), hint: { text: puzzle.hint } });
   } catch (e) {
     console.error('[level29] hint', e);
     fail(res, 500, e.message);

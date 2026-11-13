@@ -129,8 +129,7 @@ export default function Btlevel41screen({ playerId, onExit, onComplete }: Props)
       applyState(r.state);
     }
     if (!r.success) {
-      if (r.error === 'NOT_ENOUGH_BULBS') Alert.alert('Not enough bulbs 💡', `You need ${state.clueCost} bulbs for a clue.`);
-      else if (r.error === 'NO_MORE_CLUES') Alert.alert('No more clues', 'Try the last letter yourself!');
+      if (r.error === 'NO_MORE_CLUES') Alert.alert('No more clues', 'Try the last letter yourself!');
     }
   };
 
@@ -241,7 +240,7 @@ export default function Btlevel41screen({ playerId, onExit, onComplete }: Props)
       {/* bottom mat : Clue + Skip */}
       <View style={s.mat}>
         <View style={s.matItem}>
-          <Text style={s.cost}>💡 x{state.clueCost}</Text>
+          <Text style={s.cost}>💡 FREE</Text>
           <Pressable style={[s.circle, { backgroundColor: '#BEE8FA' }]} onPress={onClue}>
             <Text style={{ fontSize: 28 }}>🔍</Text>
           </Pressable>

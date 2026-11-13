@@ -1,6 +1,7 @@
 
 const express = require('express');
 const db = require('../db');
+const hintUsage = require('../data/brainTwistHintUsageDb');
 
 const r = express.Router();
 
@@ -77,17 +78,6 @@ const getLevel = async (n) => {
   l.answer = parseJSON(l.answer);
 
   return l;
-};
-
-const spendHints = async (playerId, amount) => {
-  const [result] = await db.query(
-    `UPDATE bt_players
-     SET hints = hints - ?
-     WHERE id = ? AND hints >= ?`,
-    [amount, playerId, amount]
-  );
-
-  return result.affectedRows > 0;
 };
 
 const solveLevel = async (playerId, levelNumber) => {
@@ -223,6 +213,24 @@ r.post('/players/:id/reward', handle(async (req, res) => {
   res.json(playerResponse(player));
 }));
 
+// Record a free hint request for screens whose clue is rendered locally.
+r.post('/hints/use', handle(async (req, res) => {
+  const result = await hintUsage.recordHintUse({
+    playerId: req.body?.playerId,
+    level: req.body?.level,
+    sessionId: req.body?.sessionId,
+    stage: req.body?.stage,
+  });
+  if (!result) {
+    return res.status(400).json({
+      success: false,
+      error: 'invalid_hint_request',
+      message: 'A valid playerId and level are required',
+    });
+  }
+  res.json(result);
+}));
+
 // Get level data. Never send the answer (or the hint text) to the frontend.
 r.get('/levels/:n', handle(async (req, res) => {
   const l = await getLevel(req.params.n);
@@ -301,10 +309,6 @@ r.post('/levels/:n/hint', handle(async (req, res) => {
     return res.status(404).json({ error: 'no_player' });
   }
 
-  if (!(await spendHints(playerId, COST.hint))) {
-    return res.status(402).json({ error: 'not_enough_hints' });
-  }
-
   let hint;
   const options = l.config?.options;
 
@@ -340,6 +344,9 @@ r.post('/levels/:n/hint', handle(async (req, res) => {
   const player = await one('SELECT hints FROM bt_players WHERE id = ?', [playerId]);
 
   res.json({
+    success: true,
+    free: true,
+    cost: 0,
     hint,
     hints: Number(player?.hints) || 0,
   });

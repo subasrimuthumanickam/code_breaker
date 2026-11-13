@@ -145,10 +145,6 @@ const Btlevel29screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
 
   const hint = async () => {
     if (!data || busy.current || solved) return;
-    if ((Number(hints) || 0) < data.hintCost) {
-      flash(`Need ${data.hintCost} hints. You have ${Number(hints) || 0}.`);
-      return;
-    }
     busy.current = true;
     try {
       const r = await hintLevel29(playerId);
@@ -310,7 +306,7 @@ const Btlevel29screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
                 </Animated.View>
                 <View style={s.lblRow}>
                   <Icon n="bulb" s={14} />
-                  <Text style={s.lbl}>{data.hintCost}</Text>
+                  <Text style={s.lbl}>FREE</Text>
                 </View>
               </View>
               <View style={s.acol}>

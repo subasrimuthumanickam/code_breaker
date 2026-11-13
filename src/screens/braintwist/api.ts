@@ -191,6 +191,28 @@ export const hint = (
     used,
   });
 
+export type HintUseResponse = {
+  success: boolean;
+  free: boolean;
+  cost: number;
+  level: number;
+  uses: number;
+  hints: number;
+};
+
+export const recordHintUse = (
+  levelNumber: number,
+  playerId: number | string,
+  sessionId?: number,
+  stage?: number
+): Promise<HintUseResponse> =>
+  call('/hints/use', {
+    level: levelNumber,
+    playerId,
+    ...(sessionId !== undefined ? { sessionId } : {}),
+    ...(stage !== undefined ? { stage } : {}),
+  });
+
 export const skip = (n: number, playerId: number) =>
   call(`/levels/${n}/skip`, {
     playerId,

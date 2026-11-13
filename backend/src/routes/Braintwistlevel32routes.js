@@ -281,7 +281,7 @@ router.post("/answer", async (req, res) => {
   }
 });
 
-// hint: removes one wrong shadow (costs 25 hints). body: {sessionId, playerId, hidden:["B"]}
+// hint: removes one wrong shadow for free. body: {sessionId, playerId, hidden:["B"]}
 router.post("/hint", async (req, res) => {
   try {
     const own = await ownSession(req, res);
@@ -291,12 +291,8 @@ router.post("/hint", async (req, res) => {
     if (wrong.length <= 1)
       return res.status(400).json({ success: false, error: "No more hints for this puzzle" });
 
-    const hints = await db.spendHints(own.playerId, HINT_COST);
-    if (hints === null)
-      return res.status(402).json({ success: false, error: "Not enough hints" });
-
     const remove = wrong[Math.floor(Math.random() * wrong.length)];
-    res.json({ success: true, hints, remove });
+    res.json({ success: true, free: true, cost: 0, hints: await db.getHints(own.playerId), remove });
   } catch (e) {
     console.error("[level32 /hint]", e);
     res.status(500).json({ success: false, error: e.message || "Could not use hint" });

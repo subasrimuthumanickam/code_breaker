@@ -797,7 +797,7 @@ const ANSWER = {
   cyan: 'f1',
 };
 
-const HINT_COST = 25;
+const HINT_COST = 0;
 
 // one clue per hint use, in this order
 const HINTS = [

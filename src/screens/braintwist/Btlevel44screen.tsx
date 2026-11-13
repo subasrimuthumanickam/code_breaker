@@ -36,7 +36,7 @@ const SLOTS = [
 const PLACED_SCALE = 0.62;
 
 const FALLBACK: Level44Data = {
-  level: 44, prefix: 'We need', suffix: QUESTION_SUFFIX, shownNumber: 9, appleCount: 6, hintCost: 25, skipCost: 50,
+  level: 44, prefix: 'We need', suffix: QUESTION_SUFFIX, shownNumber: 9, appleCount: 6, hintCost: 0, skipCost: 50,
 };
 
 const inBowlZone = (cx: number, cy: number) =>
@@ -186,16 +186,10 @@ export default function Btlevel44screen({ playerId, hints, setHints, onExit, onC
 
   const onHint = async () => {
     try {
-      if (Number(hints) < data.hintCost) {
-        Alert.alert('Hint', `Need ${data.hintCost} hints. You have ${Number(hints)}.`);
-        return;
-      }
       const r = await getLevel44Hint(USER_ID);
-      setHints(Number(hints) - r.cost);
       Alert.alert('Hint', r.hint);
     } catch {
-      setHints(Number(hints) - data.hintCost);
-      Alert.alert('Hint', 'Count the apples... then look at the number again. Can you turn it?');
+      Alert.alert('Hint', 'Could not load hint. Please try again.');
     }
   };
 

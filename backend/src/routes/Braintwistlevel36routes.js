@@ -263,11 +263,8 @@ router.post("/hint", (req, res) => {
   const playerId = needPlayer(req, res);
   if (playerId === null) return;
 
-  if (!spendHints(playerId, HINT_COST)) {
-    return res.status(402).json({ success: false, error: "Not enough hints" });
-  }
   const i = Math.min(nextHintIndex(playerId), HINTS.length - 1);
-  res.json({ success: true, hint: HINTS[i], hints: getPlayer(playerId).hints });
+  res.json({ success: true, free: true, cost: 0, hint: HINTS[i], hints: getPlayer(playerId).hints });
 });
 
 router.post("/reward", (req, res) => {

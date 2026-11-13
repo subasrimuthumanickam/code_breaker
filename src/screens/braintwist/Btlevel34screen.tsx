@@ -143,10 +143,6 @@ export default function Btlevel34screen({
 
   const onHint = async () => {
     if (busy || done || !question) return;
-    if (hints < question.hintCost) {
-      Alert.alert('Hint', `Need ${question.hintCost} hints. You have ${hints}.`);
-      return;
-    }
     setBusy(true);
     try {
       const res = await level34Api.useHint(playerId);
@@ -267,7 +263,6 @@ export default function Btlevel34screen({
 
             <View style={{ marginTop: 6, marginBottom: 18 }}>
               <BottomBar
-                hintCost={question.hintCost}
                 videoReward={question.videoReward}
                 skipCost={question.skipCost}
                 onHint={onHint}

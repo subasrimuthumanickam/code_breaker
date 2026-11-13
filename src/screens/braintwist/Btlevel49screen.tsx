@@ -117,18 +117,16 @@ export default function BTLevel49Screen({ playerId, hints, setHints, onExit, onC
 
   const onClue = async () => {
     if (!info || busy || status === 'ok') return;
-    if (hints < info.clueCost) return flash('Hints madhiri illa');
     try {
-      const r = await requestLevel49Clue(playerId, hints, locked);
+      const r = await requestLevel49Clue(playerId, locked);
       if (r.ok && r.index !== undefined && r.letter) {
-        setHints(hints - (r.cost || 0));
         const nextLocked = [...locked, r.index];
         setLocked(nextLocked);
         const next = [...letters];
         next[r.index] = r.letter;
         setLetters(next);
         if (next.every(Boolean)) check(next, nextLocked);
-      } else if (r.error === 'not_enough_hints') flash('Hints madhiri illa');
+      } else if (r.error) flash(r.error);
     } catch {
       flash('Network error');
     }
@@ -257,7 +255,7 @@ export default function BTLevel49Screen({ playerId, hints, setHints, onExit, onC
             </Pressable>
             <View style={st.cost}>
               <Ionicons name="bulb" size={13} color={COLORS.yellow} />
-              <Text style={st.costText}>{info.clueCost}</Text>
+              <Text style={st.costText}>FREE</Text>
             </View>
           </View>
           <View style={st.matItem}>

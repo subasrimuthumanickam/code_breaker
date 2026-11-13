@@ -27,7 +27,6 @@ import {
   BTVideoIcon,
 } from './Btlevel35art';
 
-const HINT_COST = 25;
 const SKIP_COST = 50; // keep in sync with the backend costs
 const REWARD = 75;
 const CORRECT_ANSWER = '052';
@@ -196,17 +195,13 @@ export default function BTLevel35Screen({
 
   const onHint = async () => {
     if (busy.current || done) return;
-    if (bal < HINT_COST) {
-      flash('Need ' + HINT_COST + ' hints. You have ' + bal + '.');
-      return;
-    }
     busy.current = true;
     try {
       const res = await bt35Hint(playerId);
       syncBalance(res.hints);
       setHintText(res.hint.text);
     } catch (e: any) {
-      flash(e.status === 402 ? 'Not enough hints' : e.message);
+      flash(e.message || 'Could not load hint');
     } finally {
       busy.current = false;
     }
@@ -344,7 +339,7 @@ export default function BTLevel35Screen({
           </Pressable>
           <View style={s.costPill}>
             <BTBulbIcon size={12} />
-            <Text style={s.costText}>{HINT_COST}</Text>
+            <Text style={s.costText}>FREE</Text>
           </View>
         </View>
 

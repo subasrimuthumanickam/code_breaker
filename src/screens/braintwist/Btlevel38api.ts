@@ -18,5 +18,5 @@ async function req<T>(path: string, method: 'GET' | 'POST' = 'GET', body?: objec
 
 export const getLevel = () => req<Level38>('/');
 export const submit = (playerId: number, answer: string) => req<Level38Result>('/submit', 'POST', { playerId, answer });
-export const getSearchHint = () => req<{ success: boolean; text: string }>('/search', 'POST', {});
-export const getClueHint = () => req<{ success: boolean; text: string }>('/clue', 'POST', {});
+export const getSearchHint = (playerId: number) => req<{ success: boolean; text: string }>('/search', 'POST', { playerId });
+export const getClueHint = (playerId: number) => req<{ success: boolean; text: string }>('/clue', 'POST', { playerId });

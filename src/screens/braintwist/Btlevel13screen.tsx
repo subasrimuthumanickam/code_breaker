@@ -883,7 +883,6 @@ const YEL_BTN = '#fbc02d';
 const YEL_BTN_D = '#d98e1c';
 
 // TODO: change this text if you want a different clue 1
-const CLUE1 = '"Everything" really means everything… look carefully at what is on the screen!';
 
 // hit boxes inside the 320 x 300 scene: [x, y, w, h]  (checked in this order)
 // (backend id 'cat' appadiye iruku, ippo adhu teddy-ya kaattum)
@@ -1101,6 +1100,7 @@ export default function BTLevel13Screen({ playerId, hints, setHints, onHints, on
   const [note, setNote] = useState('');
   const [loading, setLoading] = useState(true);
   const [clueOpen, setClueOpen] = useState(false);
+  const [clueText, setClueText] = useState('');
 
   const sidR = useRef<number | null>(null), busyR = useRef(false), doneR = useRef(false);
   const pan = useRef(new Animated.ValueXY()).current;
@@ -1195,7 +1195,21 @@ export default function BTLevel13Screen({ playerId, hints, setHints, onHints, on
   })).current;
 
   /* ---- clues popup / video / skip ---- */
-  const openClues = () => { if (!doneR.current) { play('clue'); setClueOpen(true); } };
+  const openClues = async () => {
+    if (doneR.current || busyR.current || !sidR.current) return;
+    busyR.current = true;
+    play('clue');
+    try {
+      const r = await l13.hint(playerId, sidR.current);
+      if (typeof r.hints === 'number') setH(r.hints);
+      setClueText(r.text || 'No hint available.');
+      setClueOpen(true);
+    } catch (e: any) {
+      flash(e?.message || 'Could not load hint');
+    } finally {
+      busyR.current = false;
+    }
+  };
   const reward = async (k: 'video' | 'gift') => { play('btn'); try { const r = await api.reward(playerId, k); setH(r.hints); } catch (e) { } };
   const skip = async () => {
     play('btn');
@@ -1307,7 +1321,7 @@ export default function BTLevel13Screen({ playerId, hints, setHints, onHints, on
             <TouchableOpacity style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }]} activeOpacity={0.85} onPress={openClues}>
               <Icon n="search" s={28} />
             </TouchableOpacity>
-            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>25</Text></View>
+            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>FREE</Text></View>
           </View>
 
           <View style={st.btnCol}>
@@ -1338,7 +1352,7 @@ export default function BTLevel13Screen({ playerId, hints, setHints, onHints, on
                 <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
                 <View style={{ flex: 1 }}>
                   <Text style={st.clueHead}>Hint 1</Text>
-                  <Text style={st.clueBody}>{CLUE1}</Text>
+                  <Text style={st.clueBody}>{clueText}</Text>
                 </View>
               </View>
             </View>
@@ -1363,10 +1377,10 @@ const st = StyleSheet.create({
   sign: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingHorizontal: 16, height: 44, borderRadius: 6, backgroundColor: '#bd6b29', borderWidth: 3, borderColor: WOOD_DD, elevation: 3 },
   signT: { fontFamily: FONT, fontSize: 22, fontWeight: '900', color: '#fff', letterSpacing: 0.5 },
   signArrow: { fontFamily: FONT, fontSize: 22, fontWeight: '900', color: '#ffc533' },
-  pillWrap: { minWidth: 100, height: 44, justifyContent: 'center' },
-  pill: { height: 32, borderRadius: 16, backgroundColor: CREAM, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#d8c8a8', justifyContent: 'center', paddingLeft: 18, paddingRight: 30, elevation: 3 },
-  pillT: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#1b1b1b' },
-  pillIcon: { position: 'absolute', right: -6, top: -4 },
+  pillWrap: { position: 'relative', minWidth: 88, height: 36, justifyContent: 'center' },
+  pill: { height: 28, borderRadius: 14, backgroundColor: CREAM, borderWidth: 1.5, borderStyle: 'dashed', borderColor: '#d8c8a8', justifyContent: 'center', paddingLeft: 14, paddingRight: 26, elevation: 3 },
+  pillT: { fontFamily: FONT, fontSize: 18, fontWeight: '900', color: '#1b1b1b' },
+  pillIcon: { position: 'absolute', right: -5, top: -3 },
 
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 50, paddingBottom: 135 },
   scene: { width: SW, height: SH },

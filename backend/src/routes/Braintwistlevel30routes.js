@@ -617,7 +617,7 @@ r.post('/start', handle(async (req, res) => {
     level: LEVEL,
     question: QUESTION,
     pieces: PIECES,
-    hintCost: COST_HINT,
+    hintCost: 0,
     skipCost: COST_SKIP,
     videoReward: REWARD_VIDEO,
     hints: Number(player.hints) || 0,
@@ -681,7 +681,7 @@ r.post('/answer', handle(async (req, res) => {
 }));
 
 /* ---------------------------------------------------------
-   POST /hint   body: { playerId }   (costs 25 hints)
+   POST /hint   body: { playerId }   (free)
    the clue is saved in the database and sent back as JSON
 --------------------------------------------------------- */
 
@@ -694,13 +694,11 @@ r.post('/hint', handle(async (req, res) => {
 
   await L30.ensureState(playerId);
 
-  const hints = await L30.spendHints(playerId, COST_HINT);
-  if (hints === null) return bad(res, 402, 'not_enough_hints', 'Not enough hints');
-
   await L30.markHintUsed(playerId);
+  const hints = await L30.getHints(playerId);
   await L30.logHint(playerId, hints);
 
-  res.json({ success: true, hints, hint: { text: CLUE_TEXT } });
+  res.json({ success: true, free: true, cost: 0, hints, hint: { text: CLUE_TEXT } });
 }));
 
 /* ---------------------------------------------------------

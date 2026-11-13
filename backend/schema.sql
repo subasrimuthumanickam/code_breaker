@@ -9,6 +9,16 @@ CREATE DATABASE IF NOT EXISTS code_breaker
 
 USE code_breaker;
 
+CREATE TABLE IF NOT EXISTS bt_hint_usage (
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  player_id     VARCHAR(64) NOT NULL,
+  level_number  SMALLINT UNSIGNED NOT NULL,
+  session_id    VARCHAR(64) NULL,
+  stage         SMALLINT UNSIGNED NULL,
+  created_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  KEY idx_bt_hint_player_level (player_id, level_number, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 /* ---------------- Player accounts & activity ---------------- */
 
 CREATE TABLE IF NOT EXISTS player (

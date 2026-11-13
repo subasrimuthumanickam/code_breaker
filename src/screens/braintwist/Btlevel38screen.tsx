@@ -7,7 +7,7 @@ import {F,INK,Stage} from './BTShared';
 import {RiddleCard,Dashes,Keyboard,Mat38} from './Btlevel38art';
 
 const NAVY='#10245e',CREAM='#fbf6e9',SKY='#9fc6ea';
-const LEVEL=38,HINT_COST=25,SKIP_COST=50;
+const LEVEL=38,SKIP_COST=50;
 
 export default function BTLevel38Screen({playerId,hints,setHints,onExit,onComplete}:any){
   const [lv,setLv]=useState<L.Level38|null>(null);
@@ -48,13 +48,11 @@ export default function BTLevel38Screen({playerId,hints,setHints,onExit,onComple
 
   const useHint=async(kind:'search'|'clue')=>{
     if(busy.current||done)return;
-    if(bal<HINT_COST){flash('Need '+HINT_COST+' hints. You have '+bal+'.');return}
     busy.current=true;
     try{
-      const h=await api.hint(LEVEL,playerId,[]);setHints(h.hints);
-      const c=kind==='search'?await L.getSearchHint():await L.getClueHint();
+      const c=kind==='search'?await L.getSearchHint(playerId):await L.getClueHint(playerId);
       flash(c.text,4000);
-    }catch(e:any){flash(e?.status===402?'Not enough hints':'Network error')}
+    }catch(e:any){flash(e?.message||'Network error')}
     finally{busy.current=false}};
 
   const skip=async()=>{

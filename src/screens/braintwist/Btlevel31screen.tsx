@@ -129,10 +129,6 @@ const Btlevel31screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
   // search icon: the backend sends the clue, the CLUES popup opens
   const clueBtn = async () => {
     if (!data || busy.current || solved) return;
-    if ((Number(hints) || 0) < data.hintCost) {
-      flash(`Need ${data.hintCost} hints. You have ${Number(hints) || 0}.`);
-      return;
-    }
     busy.current = true;
     try {
       const r = await hintLevel31(playerId);
@@ -296,7 +292,7 @@ const Btlevel31screen: React.FC<Props> = ({ playerId, hints, setHints, onHints, 
               </TouchableOpacity>
               <View style={s.badge}>
                 <Icon n="bulb" s={13} />
-                <Text style={s.badgeT}>{data.hintCost}</Text>
+                <Text style={s.badgeT}>FREE</Text>
               </View>
             </View>
 

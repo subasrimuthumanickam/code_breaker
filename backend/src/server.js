@@ -39,6 +39,7 @@ const wsProfileRoutes = loadRouter("./routes/wsProfileRoutes");
 const progressRoutes = loadRouter("./routes/progress");
 const skipRoutes = loadRouter("./routes/Skiproutes");
 const braintwistClueRoutes = loadRouter("./routes/Braintwistclueroutes");
+const hintUsageDb = require("./data/brainTwistHintUsageDb");
 
 if (typeof registerRoundRoutes !== "function") {
   console.error("[ROUTE EXPORT ERROR] wordscrambleRoundFlow must export a function.");
@@ -76,6 +77,25 @@ console.log("RUNNING FILE:", __filename);
 app.use((req, res, next) => {
   console.log("REQ:", req.method, req.originalUrl);
   next();
+});
+
+app.use(async (req, res, next) => {
+  const match = req.originalUrl.split("?")[0].match(
+    /^\/api\/braintwist\/(?:level(\d+)|levels\/(\d+))\/(?:hint|clue|search)\/?$/
+  );
+  if (req.method !== "POST" || !match) return next();
+
+  try {
+    await hintUsageDb.recordHintUse({
+      playerId: req.body?.playerId ?? req.body?.userId,
+      level: match[1] || match[2],
+      sessionId: req.body?.sessionId,
+      stage: req.body?.stage,
+    });
+    next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 // General health check
