@@ -11,9 +11,7 @@ const pool = mysql.createPool({
   connectionLimit: 10,
 });
 
-/* ------------------------------------------------------------------ */
-/* SQL                                                                */
-/* ------------------------------------------------------------------ */
+
 
 const CREATE_TABLE_SQL = `
 CREATE TABLE IF NOT EXISTS braintwist_level47 (

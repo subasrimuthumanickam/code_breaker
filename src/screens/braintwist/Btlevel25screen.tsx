@@ -7,7 +7,7 @@ import Svg, { Rect, Path, Circle, Ellipse, G, Polygon, Defs, LinearGradient, Sto
 import { Stage, Coin, F } from './BTShared';
 import { Icon } from './Art';
 import { StarIcon } from './Btlevel2art';
-import { startLevel25, sendAction25, skipLevel25, Level25Start, Level25Action } from './Btlevel25api';
+import { startLevel25, sendAction25, skipLevel25, requestHint25, Level25Start, Level25Action } from './Btlevel25api';
 import { Scene, VanArt, NinjaArt, Tick, Cross, SCENE_W, SCENE_H, VAN, NINJA, ZONES } from './Btlevel25art';
 import * as api from './api';
 import { play } from './BTSound';
@@ -302,7 +302,7 @@ export default function BTLevel25Screen({ playerId, hints = 0, setHints, onExit,
   const [done, setDone] = useState(false);
   const [mark, setMark] = useState<{ x: number; y: number } | null>(null);
   const [result, setResult] = useState<Level25Action | null>(null);
-  const [clueOpen, setClueOpen] = useState(false);
+  const [hintText, setHintText] = useState<string | null>(null); // comes from the backend (POST /level25/hint)
   const [bal, setBal] = useState<number>(Number(hints) || 0);
 
   const shake = useRef(new Animated.Value(0)).current;
@@ -422,8 +422,21 @@ export default function BTLevel25Screen({ playerId, hints = 0, setHints, onExit,
     return false;
   };
 
-  // magnifier: free clue popup, no hints / coins / video needed
-  const onClue = () => { if (!done) { play('clue'); setClueOpen(true); } };
+  // magnifier (free): the frontend sends the request, the backend saves it in the
+  // database and answers with the hint text as JSON, which is shown in the popup
+  const onClue = async () => {
+    if (actBusy.current || done || !sessionId || hintText) return;
+    play('clue');
+    actBusy.current = true;
+    try {
+      const r = await requestHint25({ sessionId, playerId });
+      const text = r.text || r.message;
+      if (text) setHintText(text);
+      else flash('Hint not available');
+    } catch (e: any) {
+      flash(e.message || 'Network error');
+    } finally { actBusy.current = false; }
+  };
 
   const onVideo = async () => {
     if (actBusy.current) return;
@@ -601,11 +614,11 @@ export default function BTLevel25Screen({ playerId, hints = 0, setHints, onExit,
           </View>
         </View>
 
-        {/* CLUES popup (free) */}
-        {clueOpen && (
+        {/* HINTS popup: the text is what the backend sent */}
+        {!!hintText && (
           <View style={st.overlay}>
             <View style={st.clueCard}>
-              <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={() => { play('btn'); setClueOpen(false); }}>
+              <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={() => { play('btn'); setHintText(null); }}>
                 <Icon n="cross" s={20} />
               </TouchableOpacity>
               <Text style={st.clueTitle}>HINTS</Text>
@@ -613,7 +626,7 @@ export default function BTLevel25Screen({ playerId, hints = 0, setHints, onExit,
                 <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
                 <View style={{ flex: 1 }}>
                   <Text style={st.clueHead}>Hint 1</Text>
-                  <Text style={st.clueBody}>{view.clue}</Text>
+                  <Text style={st.clueBody}>{hintText}</Text>
                 </View>
               </View>
             </View>
@@ -678,7 +691,7 @@ const st = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
   badgeT: { fontFamily: FONT, fontSize: 14, fontWeight: '900', color: '#fff' },
 
-  /* clue popup */
+  /* hint popup */
   overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.5)', alignItems: 'center', justifyContent: 'center', zIndex: 90, elevation: 90 },
   clueCard: { width: '86%', maxWidth: 360, backgroundColor: CREAM, borderColor: WOOD_D, borderWidth: 6, borderRadius: 28, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 10 },
   clueTitle: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 14 },

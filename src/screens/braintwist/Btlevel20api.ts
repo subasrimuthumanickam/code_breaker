@@ -32,6 +32,7 @@ function detectHost(): string {
 const BASE = `${detectHost()}/api/braintwist/level20`;
 console.log('[Level20] API base:', BASE);
 
+// key is A-D, label is a number from 1 to 200 (sent by the backend as text)
 export type Level20Option = { key: 'A' | 'B' | 'C' | 'D'; label: string };
 
 export type Level20StartResponse = {
@@ -50,19 +51,35 @@ export type Level20AnswerResponse = {
   error?: string;
 };
 
+export type Level20HintResponse = {
+  success: boolean;
+  free: boolean;
+  cost: number;
+  text: string;
+  hintsUsed: number;
+  error?: string;
+};
+
 async function post<T>(path: string, body: object): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  const json = await res.json();
+  let json: any = {};
+  try { json = await res.json(); } catch (e) {}
   if (!res.ok) throw new Error(json.error || 'Request failed');
   return json as T;
 }
 
+// 1. start: backend makes (or reuses) a session with 4 numbers from 1 to 200, saved in MySQL
 export const startLevel20 = (playerId: number) =>
   post<Level20StartResponse>('/start', { playerId });
 
+// 2. answer: backend checks the choice against the saved numbers
 export const submitLevel20Answer = (playerId: number, sessionId: number, choice: string) =>
   post<Level20AnswerResponse>('/answer', { playerId, sessionId, choice });
+
+// 3. hint: backend saves the hint use and sends the hint text
+export const getLevel20Hint = (playerId: number, sessionId: number) =>
+  post<Level20HintResponse>('/hint', { playerId, sessionId });

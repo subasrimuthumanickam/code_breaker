@@ -183,11 +183,19 @@ const eye = StyleSheet.create({ e: { width: 4, height: 4, borderRadius: 2, backg
    - paper with the password is hidden BEHIND the vault
    - keypad 1-9 on the wall (top right)
    - desk with books (bottom right), decoy
+   - when `opened` is true the vault DOOR swings open (left hinge)
+     and the gold bars inside are shown
 ========================================================= */
 
 export const SCENE_W = 300;
 export const SCENE_H = 295;
 export const VAULT_MAX_SLIDE = 66;
+
+// vault body geometry (inside the 122 x 200 vault view)
+const DOOR_X = 34;
+const DOOR_Y = 67;
+const DOOR_W = 86;
+const DOOR_H = 123;
 
 type SceneProps = {
   moved: boolean; // vault already pushed (server says so)
@@ -227,8 +235,23 @@ const KEYS = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 export function VaultScene15({ moved, code, opened, typed, codeLength, onKey, onThing, onPush, disabled }: SceneProps) {
   const slide = useRef(new Animated.Value(moved ? VAULT_MAX_SLIDE : 0)).current;
+  const openA = useRef(new Animated.Value(opened ? 1 : 0)).current; // 0 closed -> 1 door fully open
   const P = useRef({ moved, onPush, disabled });
   P.current = { moved, onPush, disabled };
+
+  // swing the vault door open (or shut again when the level restarts)
+  useEffect(() => {
+    Animated.timing(openA, {
+      toValue: opened ? 1 : 0,
+      duration: 1100,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start();
+  }, [opened]);
+
+  const doorRot = openA.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '-105deg'] });
+  const glowOp = openA.interpolate({ inputRange: [0, 0.5, 1], outputRange: [0, 0.15, 0.4] });
+  const goldScale = openA.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0.9, 0.95, 1] });
 
   // the desk (with the books on it) and the books can both be dragged around
   const desk = useDrag(() => onThing('desk'), disabled);
@@ -335,31 +358,66 @@ export function VaultScene15({ moved, code, opened, typed, codeLength, onKey, on
 
       {/* the vault (drag it to the right, or tap it) */}
       <Animated.View {...pr.panHandlers} style={{ position: 'absolute', left: 0, top: 0, width: 122, height: 200, transform: [{ translateX: slide }] }}>
-        <Svg width={122} height={200} viewBox="0 0 122 200">
-          {/* side handles */}
+        {/* side handles + body frame + inside (gold is always there, the door hides it) */}
+        <Svg width={122} height={200} viewBox="0 0 122 200" style={StyleSheet.absoluteFill}>
           <Rect x="26" y="96" width="8" height="22" fill="#a5a597" stroke="#333" strokeWidth="1.5" />
           <Rect x="26" y="146" width="8" height="22" fill="#a5a597" stroke="#333" strokeWidth="1.5" />
-          {/* body */}
-          <Rect x="34" y="67" width="86" height="123" fill={opened ? '#4a4a44' : '#b9b9ac'} stroke="#333" strokeWidth="2" />
-          {opened ? (
-            <G>
-              <Rect x="44" y="80" width="66" height="98" fill="#2e2e2a" />
-              <Rect x="52" y="146" width="50" height="10" fill="#f6c94a" stroke="#b98a14" strokeWidth="1" />
-              <Rect x="58" y="134" width="38" height="10" fill="#f6c94a" stroke="#b98a14" strokeWidth="1" />
-              <Rect x="64" y="122" width="26" height="10" fill="#f6c94a" stroke="#b98a14" strokeWidth="1" />
-              <SvgText x="77" y="114" textAnchor="middle" fontSize="18" fill="#f6c94a">★</SvgText>
-            </G>
-          ) : (
-            <G>
-              <Polygon points="34,67 120,67 108,82 46,82" fill="#cfcfc2" opacity="0.7" />
-              <Circle cx="79" cy="128" r="25" fill="#9b9b8e" stroke="#333" strokeWidth="2" />
-              <Circle cx="79" cy="128" r="18" fill="#bdbdb0" stroke="#333" strokeWidth="1.6" />
-              <Circle cx="79" cy="128" r="9" fill="#8d8d80" stroke="#333" strokeWidth="1.6" />
-              <Circle cx="79" cy="128" r="3" fill="#333" />
-              <Line x1="79" y1="106" x2="79" y2="112" stroke="#333" strokeWidth="2" />
-            </G>
-          )}
+          <Rect x={DOOR_X} y={DOOR_Y} width={DOOR_W} height={DOOR_H} fill="#4a4a44" stroke="#333" strokeWidth="2" />
+          <Rect x="44" y="80" width="66" height="98" fill="#2e2e2a" />
         </Svg>
+
+        {/* gold bars inside the vault */}
+        <Animated.View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 44, top: 80, width: 66, height: 98, transform: [{ scale: goldScale }] }}
+        >
+          <Svg width={66} height={98} viewBox="44 80 66 98">
+            {/* bottom row */}
+            <Rect x="48" y="160" width="28" height="14" rx="2" fill="#f6c94a" stroke="#b98a14" strokeWidth="1.2" />
+            <Rect x="78" y="160" width="28" height="14" rx="2" fill="#f6c94a" stroke="#b98a14" strokeWidth="1.2" />
+            {/* middle row */}
+            <Rect x="56" y="145" width="28" height="14" rx="2" fill="#fad75e" stroke="#b98a14" strokeWidth="1.2" />
+            <Rect x="86" y="145" width="20" height="14" rx="2" fill="#fad75e" stroke="#b98a14" strokeWidth="1.2" />
+            {/* top row */}
+            <Rect x="68" y="130" width="28" height="14" rx="2" fill="#ffe27a" stroke="#b98a14" strokeWidth="1.2" />
+            {/* sparkle */}
+            <SvgText x="77" y="118" textAnchor="middle" fontSize="18" fill="#ffe27a">★</SvgText>
+          </Svg>
+        </Animated.View>
+
+        {/* golden glow when the door opens */}
+        <Animated.View
+          pointerEvents="none"
+          style={{ position: 'absolute', left: 44, top: 80, width: 66, height: 98, backgroundColor: 'rgba(255,214,90,1)', opacity: glowOp }}
+        />
+
+        {/* the DOOR: swings open around its LEFT hinge */}
+        <Animated.View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            left: DOOR_X,
+            top: DOOR_Y,
+            width: DOOR_W,
+            height: DOOR_H,
+            transform: [
+              { perspective: 600 },
+              { translateX: -DOOR_W / 2 },
+              { rotateY: doorRot },
+              { translateX: DOOR_W / 2 },
+            ],
+          }}
+        >
+          <Svg width={DOOR_W} height={DOOR_H} viewBox={`0 0 ${DOOR_W} ${DOOR_H}`}>
+            <Rect x="0" y="0" width={DOOR_W} height={DOOR_H} fill="#b9b9ac" stroke="#333" strokeWidth="2" />
+            <Polygon points={`0,0 ${DOOR_W},0 ${DOOR_W - 12},15 12,15`} fill="#cfcfc2" opacity="0.7" />
+            <Circle cx="45" cy="61" r="25" fill="#9b9b8e" stroke="#333" strokeWidth="2" />
+            <Circle cx="45" cy="61" r="18" fill="#bdbdb0" stroke="#333" strokeWidth="1.6" />
+            <Circle cx="45" cy="61" r="9" fill="#8d8d80" stroke="#333" strokeWidth="1.6" />
+            <Circle cx="45" cy="61" r="3" fill="#333" />
+            <Line x1="45" y1="39" x2="45" y2="45" stroke="#333" strokeWidth="2" />
+          </Svg>
+        </Animated.View>
       </Animated.View>
     </View>
   );

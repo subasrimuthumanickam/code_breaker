@@ -5,6 +5,7 @@ const r = express.Router();
 
 const LEVEL = 21;
 const PICK_COUNT = 4;
+const hintFor = (target) => `Choose ${PICK_COUNT} numbers that add up to ${target}.`;
 
 const SKIP_COST = 50;
 
@@ -45,7 +46,7 @@ const shape = (row) => {
   return {
     id: row.id,
     title: row.title,
-    hint: row.hint_text,
+    hint: hintFor(Number(row.target)),
     target: Number(row.target),
     numbers,
   };
@@ -70,24 +71,6 @@ const puzzleForSession = async (session) => {
   }
   if (!row) throw new Error('No active puzzle in bt_level21_puzzles');
   return shape(row);
-};
-
-// every set of PICK_COUNT indexes whose numbers add up to the target
-const findSolutions = (numbers, target) => {
-  const out = [];
-  const walk = (start, chosen, sum) => {
-    if (chosen.length === PICK_COUNT) {
-      if (sum === target) out.push([...chosen]);
-      return;
-    }
-    for (let i = start; i < numbers.length; i++) {
-      chosen.push(i);
-      walk(i + 1, chosen, sum + numbers[i]);
-      chosen.pop();
-    }
-  };
-  walk(0, [], 0);
-  return out;
 };
 
 // clean an index list coming from the frontend
@@ -381,8 +364,8 @@ r.post('/action', handle(async (req, res) => {
 }));
 
 /* ---------------------------------------------------------
-   POST /level21/hint     body: { sessionId, playerId, locked: [index...] }
-   Reveals one more number that belongs to a valid answer for free.
+   POST /level21/hint     body: { sessionId, playerId }
+   Returns the single level hint without revealing any answer numbers.
 --------------------------------------------------------- */
 
 r.post('/hint', handle(async (req, res) => {
@@ -403,46 +386,14 @@ r.post('/hint', handle(async (req, res) => {
   }
 
   const puzzle = await puzzleForSession(session);
-  let locked = cleanIdx(req.body?.locked, puzzle.numbers.length).slice(0, PICK_COUNT);
-
-  // keep the last number for the player
-  if (locked.length >= PICK_COUNT - 1) {
-    return res.json({
-      success: true,
-      charged: false,
-      indices: locked,
-      hints: await getHints(playerId),
-      message: 'No more hints. You can do it!',
-    });
-  }
-
-  const sols = findSolutions(puzzle.numbers, puzzle.target);
-  if (!sols.length) return bad(res, 500, 'no_solution', 'This puzzle has no valid answer');
-
-  let sol = sols.find((s) => locked.every((i) => s.includes(i)));
-  if (!sol) {
-    locked = [];
-    sol = sols[0];
-  }
-
-  const next = sol.find((i) => !locked.includes(i));
-
-  const indices = [...locked, next];
-
-  await db.query(
-    `INSERT INTO bt_level21_picks (session_id, kind, picks, total, is_correct)
-     VALUES (?, 'hint', ?, NULL, 0)`,
-    [sessionId, indices.map((i) => puzzle.numbers[i]).join(',')]
-  );
 
   res.json({
     success: true,
     free: true,
     charged: false,
     cost: 0,
-    indices,
     hints: await getHints(playerId),
-    message: `Hint: ${puzzle.numbers[next]} is in the answer`,
+    message: puzzle.hint,
   });
 }));
 

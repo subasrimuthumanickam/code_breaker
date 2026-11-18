@@ -1,14 +1,14 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, Pressable, Animated, Easing, StyleSheet, Platform, ActivityIndicator,
+  View, Text, TouchableOpacity, Animated, Easing, StyleSheet, Platform, ActivityIndicator,
 } from 'react-native';
 import Svg, { Rect, Path, Circle, Ellipse, G, Polygon, Defs, LinearGradient, Stop } from 'react-native-svg';
 import * as api from './api'; // same helpers the other levels use (hint / skip / reward)
 import { F, Stage, Coin } from './BTShared';
 import { Icon } from './Art';
 import { play } from './BTSound';
-import { startLevel22, submitLevel22Answer } from './Btlevel22api';
+import { startLevel22, submitLevel22Answer, getLevel22Hint } from './Btlevel22api';
 import { ApplesGame } from './Btlevel22art';
 
 const FONT: any = F;
@@ -27,6 +27,7 @@ const LIME_RING = '#f4f1dc';
 const RED = '#f0434d';
 const ARROW = '#ffb629';
 const BADGE = '#6b4423';
+const GREEN_OK = '#3ec45a';
 const YEL_BTN = '#fbc02d';
 const YEL_BTN_D = '#d98e1c';
 
@@ -214,6 +215,8 @@ export default function Btlevel22screen({ playerId, hints, setHints, onExit, onC
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
   const [note, setNote] = useState('');
   const [resetKey, setResetKey] = useState(0); // changing it rebuilds the apples game
+  const [hintText, setHintText] = useState('');
+  const [showHint, setShowHint] = useState(false);
 
   const busy = useRef(false);
   const done = useRef(false);
@@ -302,18 +305,17 @@ export default function Btlevel22screen({ playerId, hints, setHints, onExit, onC
     }
   };
 
-  // ---- hint / video / skip (same costs as the other levels) ----
+  // ---- hint: the cost is taken as in the other levels, the hint text comes from the backend (saved in MySQL) ----
   const hint = async () => {
-    if (busy.current || done.current) return;
+    if (busy.current || done.current || !sessionId) return;
     play('clue');
     busy.current = true;
     try {
       const r: any = await api.recordHintUse(LEVEL, playerId);
       if (typeof r?.hints === 'number') setHints?.(r.hints);
-      flash(
-        r?.hint?.text || 'The plate must never be empty. Think about the last apple...',
-        3500
-      );
+      const h = await getLevel22Hint(playerId, sessionId);
+      setHintText(h.text);
+      setShowHint(true);
     } catch (e: any) {
       flash(e?.message || 'Hint not available');
     } finally {
@@ -458,6 +460,26 @@ export default function Btlevel22screen({ playerId, hints, setHints, onExit, onC
             <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>{SKIP_COST}</Text></View>
           </View>
         </View>
+
+        {/* HINTS popup (same as Level 19 / 20 / 21) */}
+        {showHint && (
+          <View style={st.overlay}>
+            <View style={st.clueCard}>
+              <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={() => { play('btn'); setShowHint(false); }}>
+                <Icon n="cross" s={20} />
+              </TouchableOpacity>
+              <Text style={st.clueTitle}>HINTS</Text>
+
+              <View style={[st.clueRow, st.clueRowOpen]}>
+                <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={st.clueHead}>Hint 1</Text>
+                  <Text style={st.clueBody}>{hintText}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     </Stage>
   );
@@ -510,4 +532,16 @@ const st = StyleSheet.create({
   circleBtn: { width: 60, height: 60, borderRadius: 30, borderWidth: 5, alignItems: 'center', justifyContent: 'center', elevation: 6 },
   badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
   badgeT: { fontFamily: FONT, fontSize: 14, fontWeight: '900', color: '#fff' },
+
+  // HINTS popup (same as Level 19 / 20 / 21)
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.5)', alignItems: 'center', justifyContent: 'center', zIndex: 50, elevation: 50 },
+  clueCard: { width: '86%', maxWidth: 360, backgroundColor: CREAM, borderColor: WOOD_D, borderWidth: 6, borderRadius: 28, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 10 },
+  clueTitle: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 14 },
+  closeBtn: { position: 'absolute', top: -4, right: -4, width: 38, height: 38, borderRadius: 19, backgroundColor: WOOD, borderWidth: 3, borderColor: WOOD_D, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  clueRow: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 22, borderWidth: 2.5, paddingVertical: 14, paddingHorizontal: 14, marginBottom: 12 },
+  clueRowOpen: { backgroundColor: '#fff', borderColor: GREEN_OK },
+  clueNum: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#bd6b29', alignItems: 'center', justifyContent: 'center' },
+  clueNumT: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: '#fff' },
+  clueHead: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#bd6b29' },
+  clueBody: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', marginTop: 2 },
 });

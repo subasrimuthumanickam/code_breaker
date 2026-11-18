@@ -1,11 +1,4 @@
-// Level 13 - "Burn everything!"  (cat on the shelf)
-//
-// Frontend  --POST-->  /level13/start | /level13/burn | /level13/hint
-// Backend validates, saves to MySQL (bt_level13_sessions / bt_level13_actions) and answers in JSON.
-//
-// MOUNT it next to the other Brain Twist routes, e.g. in your server/app file:
-//   app.use('/api/brain-twist/level13', require('./routes/Braintwistlevel13routes'));
-// (use the SAME prefix as BT_API in the app's ./config, plus "/level13")
+
 
 const express = require('express');
 const L = require('../data/level13Db');

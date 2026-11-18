@@ -31,6 +31,16 @@ export type L23AnswerResponse = {
   error?: string;
 };
 
+export type L23HintResponse = {
+  success: boolean;
+  free: boolean;
+  cost: number;
+  hintId: string | null;
+  hintIndex: number | null;
+  message: string;
+  error?: string;
+};
+
 async function post(path: string, body: any) {
   const res = await fetch(`${BASE_URL}${path}`, {
     method: 'POST',
@@ -38,6 +48,19 @@ async function post(path: string, body: any) {
     body: JSON.stringify(body),
   });
   return res.json();
+}
+
+async function postHint(body: { playerId: number; sessionId: number; picked: string[] }): Promise<L23HintResponse> {
+  const res = await fetch(`${BASE_URL}/hint`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  if (!res.ok || !data.success) {
+    throw new Error(data.error || 'Could not load level 23 hint');
+  }
+  return data as L23HintResponse;
 }
 
 export function startLevel23(playerId: number): Promise<L23StartResponse> {
@@ -50,6 +73,14 @@ export function submitLevel23Answer(
   answer: string[]
 ): Promise<L23AnswerResponse> {
   return post('/answer', { playerId, sessionId, answer });
+}
+
+export function requestLevel23Hint(
+  playerId: number,
+  sessionId: number,
+  picked: string[]
+): Promise<L23HintResponse> {
+  return postHint({ playerId, sessionId, picked });
 }
 
 export async function getLevel23Status(playerId: number) {

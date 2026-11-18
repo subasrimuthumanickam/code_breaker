@@ -1,3 +1,4 @@
+
 import { BT_API } from './config';
 
 export type Level25Start = {
@@ -5,8 +6,16 @@ export type Level25Start = {
   sessionId: number;
   level: number;
   title: string;   // "Save Tung Tung Tung Sahur from the police!"
-  clue: string;    // free clue text (from the backend)
   hints: number;   // current hint balance
+};
+
+export type Level25Hint = {
+  success: boolean;
+  hintNo: number;     // how many times this session opened the hint
+  free: boolean;
+  cost: number;
+  text: string;       // the hint text (from the backend / database)
+  message: string;
 };
 
 export type Level25Action = {
@@ -51,6 +60,17 @@ const call = async (path: string, body: unknown) => {
 
 export const startLevel25 = (playerId: number): Promise<Level25Start> =>
   call('/level25/start', { playerId });
+
+// magnifier pressed: the backend saves the hint request in the database
+// and sends the hint text back as JSON
+export const requestHint25 = (params: {
+  sessionId: number;
+  playerId: number;
+}): Promise<Level25Hint> =>
+  call('/level25/hint', {
+    sessionId: params.sessionId,
+    playerId: params.playerId,
+  });
 
 // the player dropped an item on a target. item = 'van', target = 'door_left' | 'door_right'
 export const sendAction25 = (params: {

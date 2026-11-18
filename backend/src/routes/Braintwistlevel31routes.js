@@ -9,11 +9,6 @@ const COST_HINT = 25;
 const COST_SKIP = 50;
 const REWARD_VIDEO = 75;
 
-/* ---------------------------------------------------------
-   LEVEL 31 - find the mistake
-   the sentence has a double word: "find the the mistake"
-   the answer is the repeated word: "the"
---------------------------------------------------------- */
 
 // NOTE: the double "the" is the mistake - do not fix it!
 const QUESTION = '84% of people reading this will not find the the mistake in this.';

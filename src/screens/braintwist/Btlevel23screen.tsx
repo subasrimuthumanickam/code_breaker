@@ -8,7 +8,7 @@ import * as api from './api'; // same helpers the other levels use (hint / skip 
 import { F, Stage, Coin } from './BTShared';
 import { Icon } from './Art';
 import { play } from './BTSound';
-import { startLevel23, submitLevel23Answer } from './Btlevel23api';
+import { requestLevel23Hint, startLevel23, submitLevel23Answer } from './Btlevel23api';
 import { Face, FACE_IDS, FACE_LAYOUT } from './Btlevel23art';
 
 const FONT: any = F;
@@ -35,6 +35,10 @@ const LEVEL = 23;
 const SKIP_COST = 50;
 const FACE = 62;
 const RING = 72;
+
+// the one and only hint for this level
+const HINT_TEXT =
+  'Look at the instruction at the top: "Tap them in order". Tap the faces in the same order as the small faces shown there, from left to right.';
 
 type Props = {
   playerId: number;
@@ -225,6 +229,35 @@ function PopTouch({ onPress, disabled, delay = 0, children }: any) {
   );
 }
 
+/* ---------- hints popup (same look as Level 22, single hint) ---------- */
+function HintsModal({ onClose }: { onClose: () => void }) {
+  const pop = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(pop, { toValue: 1, friction: 7, tension: 90, useNativeDriver: true }).start();
+  }, []);
+  return (
+    <View style={st.overlay}>
+      {/* tap outside the card to close */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <Animated.View style={[st.hintCard, { opacity: pop, transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
+        <Text style={st.hintTitle}>HINTS</Text>
+        <View style={st.hintBox}>
+          <View style={st.hintNum}>
+            <Text style={st.hintNumT}>1</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={st.hintHead}>Hint 1</Text>
+            <Text style={st.hintText}>{HINT_TEXT}</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={st.hintClose} activeOpacity={0.85} onPress={onClose}>
+          <Text style={st.hintCloseT}>✕</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
+}
+
 /* =========================================================
    SCREEN
 ========================================================= */
@@ -235,8 +268,8 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
   const [sequence, setSequence] = useState<string[] | null>(null);
   const [picked, setPicked] = useState<string[]>([]);
   const [result, setResult] = useState<'correct' | 'wrong' | null>(null);
-  const [hintId, setHintId] = useState<string | null>(null);
   const [note, setNote] = useState('');
+  const [hintOpen, setHintOpen] = useState(false);
 
   const busy = useRef(false);
   const done = useRef(false);
@@ -296,15 +329,14 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
 
   // ---- tap a face: add to the order, tap again to take it back ----
   const onTap = (id: string) => {
-    if (done.current || result) return;
+    if (done.current || result || hintOpen) return;
     play('tap');
-    setHintId(null);
     setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   };
 
   // ---- submit the tapped order ----
   const onSubmit = async () => {
-    if (busy.current || done.current || picked.length !== FACE_IDS.length) return;
+    if (busy.current || done.current || hintOpen || picked.length !== FACE_IDS.length) return;
     busy.current = true;
     play('btn');
     try {
@@ -340,28 +372,26 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
     }
   };
 
-  // ---- hint / video / skip (same costs as the other levels) ----
+  // ---- hint / video / skip ----
+  const closeHint = () => {
+    play('btn');
+    setHintOpen(false);
+  };
+
   const hint = async () => {
     if (busy.current || done.current) return;
     play('clue');
+    if (hintOpen) return;
     if (!sequence) {
       flash('Please wait...');
       return;
     }
     busy.current = true;
     try {
-      const r: any = await api.recordHintUse(LEVEL, playerId);
-      if (typeof r?.hints === 'number') setHints?.(r.hints);
-      const wrongAt = picked.findIndex((id, i) => id !== sequence[i]);
-      if (wrongAt >= 0) {
-        flash('Check your order again!', 2500);
-      } else {
-        const next = sequence[picked.length];
-        if (next) {
-          setHintId(next);
-          setTimeout(() => setHintId(null), 2500);
-        }
-      }
+      // still tell the server a hint was used; only the fixed hint text is shown
+      const currentSession = await getSession();
+      await requestLevel23Hint(playerId, currentSession.sessionId, picked);
+      setHintOpen(true);
     } catch (e: any) {
       flash(e?.message || 'Hint not available');
     } finally {
@@ -465,7 +495,6 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
                 const pos = FACE_LAYOUT[id];
                 const idx = picked.indexOf(id);
                 const isPicked = idx >= 0;
-                const isHint = hintId === id;
                 return (
                   <View key={id} style={{ position: 'absolute', left: pos.x - 5, top: pos.y - 5 }}>
                     <PopTouch delay={i * 80} disabled={!!result} onPress={() => onTap(id)}>
@@ -473,7 +502,6 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
                         style={[
                           st.ring,
                           isPicked && st.ringPicked,
-                          isHint && st.ringHint,
                           result === 'correct' && isPicked && st.ringOk,
                           result === 'wrong' && isPicked && st.ringBad,
                         ]}
@@ -534,6 +562,9 @@ export default function Btlevel23screen({ playerId, hints, setHints, onExit, onC
             <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>{SKIP_COST}</Text></View>
           </View>
         </View>
+
+        {/* hints popup (dims the whole screen, like Level 22) */}
+        {hintOpen && <HintsModal onClose={closeHint} />}
       </View>
     </Stage>
   );
@@ -573,7 +604,6 @@ const st = StyleSheet.create({
     borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.95)', backgroundColor: 'rgba(255,255,255,0.25)',
   },
   ringPicked: { borderStyle: 'solid', borderColor: '#fff', borderWidth: 4, backgroundColor: 'rgba(255,255,255,0.5)' },
-  ringHint: { borderStyle: 'solid', borderColor: '#c5f158', borderWidth: 4, backgroundColor: 'rgba(197,241,88,0.45)' },
   ringOk: { borderColor: '#b6ef63', backgroundColor: 'rgba(182,239,99,0.55)' },
   ringBad: { borderColor: '#f0484f', backgroundColor: 'rgba(240,72,79,0.35)' },
   badgeNum: {
@@ -603,4 +633,31 @@ const st = StyleSheet.create({
   circleBtn: { width: 60, height: 60, borderRadius: 30, borderWidth: 5, alignItems: 'center', justifyContent: 'center', elevation: 6 },
   badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
   badgeT: { fontFamily: FONT, fontSize: 14, fontWeight: '900', color: '#fff' },
+
+  // hints popup
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(30,40,60,0.55)',
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 14, zIndex: 100, elevation: 20,
+  },
+  hintCard: {
+    width: '100%', maxWidth: 400, backgroundColor: CREAM, borderRadius: 30,
+    borderWidth: 5, borderColor: '#c9792b', paddingHorizontal: 16, paddingTop: 18, paddingBottom: 20,
+    elevation: 24,
+  },
+  hintTitle: { fontFamily: FONT, fontSize: 34, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 14 },
+  hintBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fffaf1',
+    borderRadius: 20, borderWidth: 3, borderColor: '#3cc15a', paddingVertical: 14, paddingHorizontal: 14,
+  },
+  hintNum: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#b8651f', alignItems: 'center', justifyContent: 'center' },
+  hintNumT: { fontFamily: FONT, fontSize: 30, fontWeight: '900', color: '#fff' },
+  hintHead: { fontFamily: SERIF, fontSize: 20, fontWeight: '700', color: '#b8651f', marginBottom: 2 },
+  hintText: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', lineHeight: 21 },
+  hintClose: {
+    position: 'absolute', top: -16, right: -12, width: 42, height: 42, borderRadius: 21,
+    backgroundColor: '#f4a24c', borderWidth: 3, borderColor: '#c9792b', alignItems: 'center', justifyContent: 'center', elevation: 26,
+  },
+  hintCloseT: { fontFamily: FONT, fontSize: 22, fontWeight: '900', color: '#e5484d', lineHeight: 26 },
 });

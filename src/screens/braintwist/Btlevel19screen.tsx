@@ -414,11 +414,12 @@ export default function BTLevel19Screen({ playerId, hints = 0, setHints, onExit,
 
   const top = view.figures.slice(0, 2), bottom = view.figures.slice(2);
 
-  // one drawing: the number is written under it, the "?" is written inside it
+  // one drawing: the label (number or "?") is always written under it,
+  // in the same place and style, so the "?" is centered like the numbers
   const fig = (f: { lines: number; label: string }, i: number) => (
     <View key={i} style={s.fig}>
-      <Grid lines={f.lines} size={FS} mark={f.label === '?' ? '?' : undefined} />
-      {f.label !== '?' && <Text style={s.figNum}>{f.label}</Text>}
+      <Grid lines={f.lines} size={FS} />
+      <Text style={s.figNum}>{f.label}</Text>
     </View>
   );
 
@@ -441,7 +442,7 @@ export default function BTLevel19Screen({ playerId, hints = 0, setHints, onExit,
         <Animated.View style={[s.play, { transform: [{ translateX: shake }] }]}>
           <View style={[s.card, { width: CW }]}>
             <View style={s.row}>{top.map(fig)}</View>
-            <View style={s.row}>{bottom.map(fig)}</View>
+            <View style={s.rowBottom}>{bottom.map(fig)}</View>
           </View>
 
           <View style={s.crow}>
@@ -550,8 +551,9 @@ const s = StyleSheet.create({
   play: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 135 },
   card: { backgroundColor: '#fffdf8', borderWidth: 3, borderColor: '#d9c9a8', borderRadius: 16, paddingVertical: 6, paddingHorizontal: 10, elevation: 4 },
   row: { flexDirection: 'row', justifyContent: 'center', gap: 56 },
-  fig: { alignItems: 'center', minWidth: 70 },
-  figNum: { fontFamily: FONT, fontSize: 24, fontWeight: '900', color: PINK, marginTop: -6, lineHeight: 28 },
+  rowBottom: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', alignSelf: 'center' },
+  fig: { alignItems: 'center', justifyContent: 'center', minWidth: 70 },
+  figNum: { fontFamily: FONT, fontSize: 24, fontWeight: '900', color: PINK, marginTop: -6, lineHeight: 28, textAlign: 'center', alignSelf: 'center' },
 
   crow: { flexDirection: 'row', alignItems: 'center', gap: 18, marginTop: 8 },
   cbtn: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#5ba8d0', borderWidth: 2.5, borderColor: INK, alignItems: 'center', justifyContent: 'center', elevation: 3 },

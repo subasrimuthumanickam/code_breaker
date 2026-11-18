@@ -1,5 +1,7 @@
+
 const express = require('express');
 const db = require('../db');
+const L25 = require('../data/level25Db'); // title, hint (clue), answer, messages
 
 const r = express.Router();
 
@@ -8,23 +10,17 @@ const LEVEL = 25;
 // keep in sync with the frontend (Btlevel25screen.tsx)
 const SKIP_COST = 50;
 
-/* ---------- PUZZLE ---------- */
+/* ---------- PUZZLE (all text comes from data/level25Db.js) ---------- */
 
-const TITLE = 'Save Tung Tung Tung Sahur from the police!';
-const CLUE =
-  'Sahur is stuck on the roof and the police van is watching. Think about where the van should go so he can slip away!';
+const TITLE = L25.title;
+const CLUE = L25.clue; // "Move the house door closer to the police van."
 
-// the answer: drag the police van beside the door of Sahur's house (the left one)
-const ANSWER_ITEM = 'van';
-const ANSWER_TARGET = 'door_left';
+const ANSWER_ITEM = L25.answerItem;
+const ANSWER_TARGET = L25.answerTarget;
 
-const RIGHT_MSG = 'Yes! The van moved away from the door and Sahur escaped!';
-const WRONG_MSGS = [
-  'Not quite. Try again!',
-  'Look at the roof. Where is Sahur?',
-  'Move the van next to the door of his house.',
-];
-const WRONG_RIGHT_DOOR = 'Sahur is not over there. Look at the roof of the other house!';
+const RIGHT_MSG = L25.rightMsg;
+const WRONG_MSGS = L25.wrongMsgs;
+const WRONG_RIGHT_DOOR = L25.wrongRightDoor;
 
 /* ---------- HELPERS ---------- */
 
@@ -83,11 +79,19 @@ const ready = (async () => {
       status VARCHAR(20) NOT NULL DEFAULT 'in_progress',
       wrong_attempts INT NOT NULL DEFAULT 0,
       total_attempts INT NOT NULL DEFAULT 0,
+      hints_used INT NOT NULL DEFAULT 0,
       started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       completed_at DATETIME NULL,
       INDEX idx_l25_player (player_id)
     )
   `);
+
+  // older installs: add the hints_used column if the table already existed
+  try {
+    await db.query('ALTER TABLE bt_level25_sessions ADD COLUMN hints_used INT NOT NULL DEFAULT 0');
+  } catch (err) {
+    // column already exists -> fine
+  }
 
   await db.query(`
     CREATE TABLE IF NOT EXISTS bt_level25_actions (
@@ -98,6 +102,20 @@ const ready = (async () => {
       is_correct TINYINT(1) NOT NULL DEFAULT 0,
       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
       INDEX idx_l25_session (session_id)
+    )
+  `);
+
+  // every time the player presses the magnifier, one row is saved here
+  await db.query(`
+    CREATE TABLE IF NOT EXISTS bt_level25_hints (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      session_id INT NOT NULL,
+      player_id INT NOT NULL,
+      hint_no INT NOT NULL,
+      hint_text VARCHAR(500) NOT NULL,
+      created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      INDEX idx_l25h_session (session_id),
+      INDEX idx_l25h_player (player_id)
     )
   `);
 
@@ -158,6 +176,8 @@ const unlockNext = async (playerId) => {
 
 /* ---------------------------------------------------------
    POST /level25/start     body: { playerId }
+   -> JSON { sessionId, title, hints }   (the hint text is NOT sent here;
+      the frontend asks for it with POST /level25/hint)
 --------------------------------------------------------- */
 
 r.post('/start', handle(async (req, res) => {
@@ -184,8 +204,56 @@ r.post('/start', handle(async (req, res) => {
     sessionId: session.id,
     level: LEVEL,
     title: TITLE,
-    clue: CLUE,
     hints: await getHints(playerId),
+  });
+}));
+
+/* ---------------------------------------------------------
+   POST /level25/hint      body: { sessionId, playerId }
+   frontend request -> backend checks the session -> saves the hint
+   request in the database -> sends the hint back as JSON
+--------------------------------------------------------- */
+
+r.post('/hint', handle(async (req, res) => {
+  const sessionId = toId(req.body?.sessionId);
+  const playerId = toId(req.body?.playerId);
+
+  if (!sessionId || !playerId) {
+    return bad(res, 400, 'ids_required', 'sessionId and playerId are required');
+  }
+
+  const session = await one(
+    'SELECT * FROM bt_level25_sessions WHERE id = ? AND player_id = ?',
+    [sessionId, playerId]
+  );
+
+  if (!session) return bad(res, 404, 'no_session', 'Session not found');
+  if (session.status === 'completed') {
+    return bad(res, 409, 'already_completed', 'This level is already completed');
+  }
+
+  // 1) save the hint request
+  const hintNo = Number(session.hints_used) + 1;
+
+  await db.query(
+    'INSERT INTO bt_level25_hints (session_id, player_id, hint_no, hint_text) VALUES (?, ?, ?, ?)',
+    [sessionId, playerId, hintNo, CLUE]
+  );
+
+  await db.query(
+    'UPDATE bt_level25_sessions SET hints_used = hints_used + 1 WHERE id = ?',
+    [sessionId]
+  );
+
+  // 2) JSON back to the frontend (the magnifier is free)
+  res.json({
+    success: true,
+    level: LEVEL,
+    hintNo,
+    free: true,
+    cost: 0,
+    text: CLUE,
+    message: CLUE,
   });
 }));
 

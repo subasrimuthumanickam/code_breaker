@@ -7,9 +7,7 @@ const q = async (sql, params = []) => {
   return r;
 };
 
-// ---------------------------------------------------------------------------
-// Tables + seed (runs once, safe to run many times)
-// ---------------------------------------------------------------------------
+
 let initPromise = null;
 
 function init() {

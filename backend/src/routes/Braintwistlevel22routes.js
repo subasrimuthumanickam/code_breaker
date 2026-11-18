@@ -10,6 +10,9 @@ const MAX_MOVES = 6;
 
 const QUESTION = "Give them apples, but never leave the plate empty.";
 
+// shown in the HINTS popup (the backend sends it, the frontend does not hardcode it)
+const HINT_TEXT =
+  "Don't take the last apple alone. Take the last apple together with the plate and give it to the third kid.";
 
 
 let tablesReady = null;
@@ -44,6 +47,12 @@ function ensureLevel22Tables() {
         await db.query("ALTER TABLE bt_level22_attempts MODIFY selected_answer VARCHAR(255) NOT NULL");
       } catch (e) {
         console.error("L22 alter selected_answer:", e.message);
+      }
+      // how many times the player used the hint in this session
+      try {
+        await db.query("ALTER TABLE bt_level22_sessions ADD COLUMN hints_used INT NOT NULL DEFAULT 0");
+      } catch (e) {
+        if (e.code !== "ER_DUP_FIELDNAME") console.error("L22 add hints_used:", e.message);
       }
     })().catch((e) => {
       tablesReady = null;
@@ -199,6 +208,34 @@ router.post("/answer", async (req, res) => {
     });
   } catch (err) {
     console.error("L22 answer error:", err);
+    res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// POST /api/braintwist/level22/hint   body: { playerId, sessionId }
+// saves the hint use in MySQL and sends the hint text as JSON
+router.post("/hint", async (req, res) => {
+  try {
+    const playerId = getPlayerId(req);
+    const { sessionId } = req.body;
+
+    if (!playerId || !sessionId) {
+      return res.status(400).json({ success: false, error: "playerId and sessionId required" });
+    }
+
+    await ensureLevel22Tables();
+
+    const [r] = await db.query(
+      "UPDATE bt_level22_sessions SET hints_used = hints_used + 1 WHERE id = ? AND user_id = ? AND status <> 'completed'",
+      [sessionId, playerId]
+    );
+    if (!r.affectedRows) {
+      return res.status(404).json({ success: false, error: "Session not found" });
+    }
+
+    res.json({ success: true, text: HINT_TEXT });
+  } catch (err) {
+    console.error("L22 hint error:", err);
     res.status(500).json({ success: false, error: "Server error" });
   }
 });

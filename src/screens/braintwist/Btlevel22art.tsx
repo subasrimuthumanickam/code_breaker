@@ -3,7 +3,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, Animated, PanResponder, StyleSheet, Easing } from 'react-native';
 import Svg, { Rect, Path, Polygon, Line, Circle, Ellipse } from 'react-native-svg';
 
-/* ======================= cozy room background ======================= */
 const yoyo = (v: Animated.Value, ms: number) =>
   Animated.loop(
     Animated.sequence([

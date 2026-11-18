@@ -1,9 +1,6 @@
 import { Platform } from 'react-native';
 
-// Same machine that runs the Express server (port 4000).
-//  - web / iOS simulator -> localhost
-//  - Android emulator    -> 10.0.2.2
-//  - real phone (Expo Go) -> put your PC's LAN IP here, e.g. 'http://192.168.1.5:4000'
+
 const LAN_IP: string | null = null;
 const HOST = LAN_IP ?? (Platform.OS === 'android' ? 'http://10.0.2.2:4000' : 'http://localhost:4000');
 export const API_BASE_URL = `${HOST}/api/braintwist/level50`;

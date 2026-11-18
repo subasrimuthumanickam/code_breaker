@@ -194,51 +194,6 @@ function DoubleArrow({ s }: { s: number }) {
   );
 }
 
-/* ---------- big "vault opens" animation shown when the code is right ---------- */
-const VW = 240;   // vault width
-const VH = 210;   // vault height
-
-function VaultOpenOverlay({ anim }: { anim: Animated.Value }) {
-  // door swings open around its left hinge
-  const doorRot = anim.interpolate({ inputRange: [0, 0.6, 1], outputRange: ['0deg', '-70deg', '-100deg'] });
-  const doorOp = anim.interpolate({ inputRange: [0, 0.7, 1], outputRange: [1, 1, 0.55] });
-  const glow = anim.interpolate({ inputRange: [0, 0.4, 1], outputRange: [0, 0.3, 1] });
-  const cardScale = anim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0.7, 1.05, 1] });
-  const txtOp = anim.interpolate({ inputRange: [0, 0.6, 1], outputRange: [0, 0, 1] });
-  const txtY = anim.interpolate({ inputRange: [0, 1], outputRange: [14, 0] });
-
-  return (
-    <View style={st.openOverlay} pointerEvents="auto">
-      <Animated.View style={[st.openCard, { opacity: anim.interpolate({ inputRange: [0, 0.15], outputRange: [0, 1], extrapolate: 'clamp' }), transform: [{ scale: cardScale }] }]}>
-        {/* vault body + inside */}
-        <View style={st.vaultBody}>
-          <View style={st.vaultInside}>
-            <Animated.View style={[st.vaultGlow, { opacity: glow }]} />
-            {/* gold bars */}
-            <View style={[st.gold, { left: 24, bottom: 18, width: 56 }]} />
-            <View style={[st.gold, { left: 86, bottom: 18, width: 56 }]} />
-            <View style={[st.gold, { left: 55, bottom: 44, width: 56 }]} />
-            <View style={[st.gold, { left: 118, bottom: 44, width: 40 }]} />
-            <View style={[st.gold, { left: 86, bottom: 70, width: 50 }]} />
-          </View>
-
-          {/* door (pivots on the left edge) */}
-          <Animated.View style={[st.vaultDoor, {
-            opacity: doorOp,
-            transform: [{ perspective: 700 }, { translateX: -VW / 2 + 14 }, { rotateY: doorRot }, { translateX: VW / 2 - 14 }],
-          }]}>
-            <View style={st.dialOuter}><View style={st.dialMid}><View style={st.dialIn} /></View></View>
-            <View style={[st.handleBar, { top: 40 }]} />
-            <View style={[st.handleBar, { bottom: 40 }]} />
-          </Animated.View>
-        </View>
-
-        <Animated.Text style={[st.openTxt, { opacity: txtOp, transform: [{ translateY: txtY }] }]}>VAULT OPENED!</Animated.Text>
-      </Animated.View>
-    </View>
-  );
-}
-
 /* =========================================================
    SCREEN
 ========================================================= */
@@ -260,7 +215,6 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
   const shake = useRef(new Animated.Value(0)).current;
   const qIn = useRef(new Animated.Value(0)).current;
   const sway = useRef(new Animated.Value(0)).current;
-  const openAnim = useRef(new Animated.Value(0)).current;   // vault-open animation (0 closed -> 1 open)
 
   const flash = (m: string) => {
     setNote(m);
@@ -294,7 +248,6 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
       typedRef.current = '';
       setTyped('');
       setOpened(false);
-      openAnim.setValue(0);
       doneRef.current = false;
       Animated.spring(qIn, { toValue: 1, friction: 6, tension: 70, useNativeDriver: true }).start();
     } catch (e: any) {
@@ -352,11 +305,11 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
       if (r.correct) {
         play('correct');
         doneRef.current = true;
+        // the vault in the scene itself opens (VaultScene15 reads `opened`)
         setOpened(true);
         flash(r.message);
-        // show the vault opening clearly, then continue
-        Animated.timing(openAnim, { toValue: 1, duration: 1400, easing: Easing.out(Easing.cubic), useNativeDriver: true }).start();
-        setTimeout(() => onComplete?.({ ...r, attempts: r.attempts ?? 1, skipped: false }), 2800);
+        // let the player see the scene vault open, then continue
+        setTimeout(() => onComplete?.({ ...r, attempts: r.attempts ?? 1, skipped: false }), 2200);
       } else {
         play('wrong');
         doShake();
@@ -504,7 +457,7 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
           </View>
         </Animated.View>
 
-        {/* vault picture */}
+        {/* vault picture (the vault in this scene opens when `opened` is true) */}
         <Animated.View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 135, transform: [{ translateX: shake }] }}>
           <VaultScene15
             moved={session.vaultMoved}
@@ -550,9 +503,6 @@ export default function BTLevel15Screen({ playerId, hints, setHints, onExit, onC
             <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>50</Text></View>
           </View>
         </View>
-
-        {/* vault opens (shown after the right code) */}
-        {opened && <VaultOpenOverlay anim={openAnim} />}
 
         {/* CLUES popup */}
         {showClues && (
@@ -630,18 +580,4 @@ const st = StyleSheet.create({
   clueNumT: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: '#fff' },
   clueHead: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#bd6b29' },
   clueBody: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', marginTop: 2 },
-
-  /* vault-open overlay */
-  openOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.55)', alignItems: 'center', justifyContent: 'center', zIndex: 60, elevation: 60 },
-  openCard: { alignItems: 'center' },
-  vaultBody: { width: VW, height: VH, borderRadius: 14, backgroundColor: '#9a9a90', borderWidth: 5, borderColor: '#4b4b44', padding: 12 },
-  vaultInside: { flex: 1, borderRadius: 8, backgroundColor: '#23232b', overflow: 'hidden' },
-  vaultGlow: { position: 'absolute', left: 0, right: 0, top: 0, bottom: 0, backgroundColor: 'rgba(255,214,90,0.45)' },
-  gold: { position: 'absolute', height: 26, borderRadius: 5, backgroundColor: '#f5c518', borderWidth: 2.5, borderColor: '#b8860b' },
-  vaultDoor: { position: 'absolute', left: 14, top: 14, width: VW - 28 - 10, height: VH - 28 - 10, borderRadius: 8, backgroundColor: '#b9b9ae', borderWidth: 4, borderColor: '#4b4b44', alignItems: 'center', justifyContent: 'center' },
-  dialOuter: { width: 84, height: 84, borderRadius: 42, backgroundColor: '#8f8f85', borderWidth: 3, borderColor: '#3a3a35', alignItems: 'center', justifyContent: 'center' },
-  dialMid: { width: 56, height: 56, borderRadius: 28, backgroundColor: '#a8a89d', borderWidth: 3, borderColor: '#3a3a35', alignItems: 'center', justifyContent: 'center' },
-  dialIn: { width: 18, height: 18, borderRadius: 9, backgroundColor: '#5a5a52' },
-  handleBar: { position: 'absolute', left: -10, width: 14, height: 32, borderRadius: 3, backgroundColor: '#8f8f85', borderWidth: 2, borderColor: '#3a3a35' },
-  openTxt: { marginTop: 22, fontFamily: FONT, fontSize: 34, fontWeight: '900', color: '#ffe066', letterSpacing: 1, textShadowColor: '#000', textShadowOffset: { width: 0, height: 2 }, textShadowRadius: 4 },
 });

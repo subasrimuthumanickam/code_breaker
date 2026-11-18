@@ -1,18 +1,13 @@
-/* =========================================================
-   LEVEL 25 DATA  -  "Save Tung Tung Tung Sahur from the police!"
-   Used by routes/Braintwistlevel25routes.js
-   Put this file in:  data/level25Db.js
-========================================================= */
+
 
 module.exports = {
   // question shown on the screen
   title: 'Save Tung Tung Tung Sahur from the police!',
 
-  // free clue shown when the magnifier is pressed
-  clue:
-    'Sahur is stuck on the roof and the police van is watching. Think about where the van should go so he can slip away!',
+  // free hint shown when the magnifier is pressed
+  clue: 'Move the house door closer to the police van.',
 
-  // the answer: drag the police van beside the door of Sahur's house (the left one)
+  // the answer: the left house door (Sahur's house) is dropped beside the police van
   // targets on the screen: 'door_left' (Sahur's house) and 'door_right' (the other house)
   answerItem: 'van',
   answerTarget: 'door_left',
@@ -22,7 +17,7 @@ module.exports = {
   wrongMsgs: [
     'Not quite. Try again!',
     'Look at the roof. Where is Sahur?',
-    'Move the van next to the door of his house.',
+    'Move the house door next to the police van.',
   ],
   wrongRightDoor: 'Sahur is not over there. Look at the roof of the other house!',
 };

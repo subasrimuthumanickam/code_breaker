@@ -8,10 +8,7 @@ import {RoomBackground,THEME} from './Btlevel4Theme';
 import Svg,{Path,Ellipse,Line} from 'react-native-svg';
 import {startLevel28,answerLevel28,hintLevel28,skipLevel28,rewardLevel28,Level28View,Level28Result} from './Btlevel28api';
 
-/* ---------------------------------------------------------
-   Whole egg with a slight crack (scratch lines).
-   No animation: the crack lines are visible from the start.
---------------------------------------------------------- */
+
 const EGG_BODY='M100 34 C138 34 166 92 166 130 C166 162 135 183 100 183 C65 183 34 162 34 130 C34 92 62 34 100 34 Z';
 
 const CrackingEgg=({s}:{s:number})=>(

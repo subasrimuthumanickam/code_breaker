@@ -24,7 +24,7 @@ async function call<T>(path: string, body?: object): Promise<T> {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok || data.success === false) {
-    const e: any = new Error(data.error || `Request failed (${res.status})`);
+    const e: any = new Error(data.message || data.error || `Request failed (${res.status})`);
     e.status = res.status;
     throw e;
   }
@@ -38,7 +38,7 @@ export const startLevel16 = (playerId: number) =>
     hintsUsed: number;
     wrongAttempts: number;
     hints: number;
-    clues: string[];
+    clues: string[]; // hints already given in this session (from the database)
     level: Level16Data;
   }>('/start', { playerId });
 
@@ -54,11 +54,16 @@ export const answerLevel16 = (playerId: number, sessionId: number, placements: P
     seconds: number;
   }>('/answer', { playerId, sessionId, placements });
 
+// POST /hint -> backend saves the hint use in the database and answers with the hint text
 export const hintLevel16 = (playerId: number, sessionId: number) =>
-  call<{ success: boolean; hint: { number: number; text: string }; hints: number; cost: number }>(
-    '/hint',
-    { playerId, sessionId }
-  );
+  call<{
+    success: boolean;
+    hint: { number: number; text: string };
+    hints: number;
+    cost: number;
+    hintsUsed: number;
+    clues: string[];
+  }>('/hint', { playerId, sessionId });
 
 export const skipLevel16 = (playerId: number, sessionId: number) =>
   call<{ success: boolean; skipped: boolean; attempts: number; hints: number }>('/skip', {

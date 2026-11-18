@@ -8,7 +8,7 @@ import { F, Stage, Coin } from './BTShared';
 import { Icon } from './Art';
 import { play } from './BTSound';
 import * as api from './api';
-import { Level20Option, startLevel20, submitLevel20Answer } from './Btlevel20api';
+import { Level20Option, startLevel20, submitLevel20Answer, getLevel20Hint } from './Btlevel20api';
 
 const FONT: any = F;
 const SERIF: any = Platform.select({ web: '"Playfair Display",Georgia,"Times New Roman",serif', ios: 'Georgia-Italic', default: 'serif' });
@@ -213,6 +213,8 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
   const [explanation, setExplanation] = useState('');
   const [error, setError] = useState('');
   const [note, setNote] = useState('');
+  const [hintText, setHintText] = useState('');
+  const [showHint, setShowHint] = useState(false);
   const busy = useRef(false);
   const noteTimer = useRef<any>(null);
   const sway = useRef(new Animated.Value(0)).current;
@@ -222,7 +224,7 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
   const flash = (m: string) => {
     setNote(m);
     clearTimeout(noteTimer.current);
-    noteTimer.current = setTimeout(() => setNote(''), 1800);
+    noteTimer.current = setTimeout(() => setNote(''), 2600);
   };
   const doShake = () => Animated.sequence([10, -10, 6, -6, 0].map((v) => Animated.timing(shake, { toValue: v, duration: 55, useNativeDriver: true }))).start();
 
@@ -238,10 +240,11 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
   const swayR = sway.interpolate({ inputRange: [0, 1], outputRange: ['-1.5deg', '1.5deg'] });
   const qY = qIn.interpolate({ inputRange: [0, 1], outputRange: [-16, 0] });
 
+  // 1. open the level: frontend -> backend makes/reuses a session with 4 numbers (1..200) saved in MySQL
   const load = useCallback(async () => {
     setStatus('loading');
     try {
-      const data = await startLevel20(playerId);   // frontend -> backend -> MySQL session
+      const data = await startLevel20(playerId);
       setSessionId(data.sessionId);
       setText(data.question.text);
       setOptions(data.question.options);
@@ -255,6 +258,7 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
 
   useEffect(() => { load(); }, [load]);
 
+  // 2. choose a number: backend checks it against the saved numbers and replies JSON
   const choose = async (key: string) => {
     if (sessionId == null || busy.current || status === 'correct') return;
     busy.current = true;
@@ -262,7 +266,7 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
     setPicked(key);
     setStatus('checking');
     try {
-      const res = await submitLevel20Answer(playerId, sessionId, key); // backend saves + replies JSON
+      const res = await submitLevel20Answer(playerId, sessionId, key);
       if (res.correct) {
         play('correct');
         setExplanation(res.explanation || '');
@@ -291,14 +295,15 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
     finally { busy.current = false; }
   };
 
+  // 3. hint: request the free clue; the backend saves the use in MySQL
   const hint = async () => {
-    if (busy.current || status === 'loading' || status === 'error' || status === 'correct') return;
+    if (busy.current || status === 'loading' || status === 'error' || status === 'correct' || sessionId == null) return;
     busy.current = true;
     play('clue');
     try {
-      const r = await api.recordHintUse(20, playerId);
-      if (typeof r.hints === 'number') setHints?.(r.hints);
-      flash('Count the strikes at eleven o’clock.');
+      const h = await getLevel20Hint(playerId, sessionId);
+      setHintText(h.text);
+      setShowHint(true);
     } catch (e: any) {
       flash(e?.message || 'Could not load hint');
     } finally {
@@ -367,7 +372,7 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
               </View>
             </Animated.View>
 
-            {/* answer discs */}
+            {/* answer discs (4 numbers from 1 to 200, made by the backend) */}
             <View style={st.play}>
               <Animated.View style={[st.grid, { transform: [{ translateX: shake }] }]}>
                 {options.map((o) => {
@@ -380,7 +385,9 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
                       onPress={() => choose(o.key)}
                       disabled={status === 'checking' || status === 'correct'}
                     >
-                      <View style={[st.disc, tint]}><Text style={st.num}>{o.label}</Text></View>
+                      <View style={[st.disc, tint]}>
+                        <Text style={[st.num, { fontSize: numSize(o.label) }]} numberOfLines={1}>{o.label}</Text>
+                      </View>
                     </Pressable>
                   );
                 })}
@@ -412,7 +419,7 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
             <TouchableOpacity style={[st.circleBtn, { backgroundColor: LIME, borderColor: LIME_RING }]} activeOpacity={0.85} onPress={hint}>
               <Icon n="search" s={28} />
             </TouchableOpacity>
-            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>25</Text></View>
+            <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>FREE</Text></View>
           </View>
 
           <View style={st.btnCol}>
@@ -429,6 +436,26 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
             <View style={st.badge}><Icon n="bulb" s={15} /><Text style={st.badgeT}>50</Text></View>
           </View>
         </View>
+
+        {/* HINTS popup (same as Level 19) */}
+        {showHint && (
+          <View style={st.overlay}>
+            <View style={st.clueCard}>
+              <TouchableOpacity style={st.closeBtn} activeOpacity={0.85} onPress={() => { play('btn'); setShowHint(false); }}>
+                <Icon n="cross" s={20} />
+              </TouchableOpacity>
+              <Text style={st.clueTitle}>HINTS</Text>
+
+              <View style={[st.clueRow, st.clueRowOpen]}>
+                <View style={st.clueNum}><Text style={st.clueNumT}>1</Text></View>
+                <View style={{ flex: 1 }}>
+                  <Text style={st.clueHead}>Hint 1</Text>
+                  <Text style={st.clueBody}>{hintText}</Text>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
       </View>
     </Stage>
   );
@@ -440,6 +467,9 @@ export default function Btlevel20screen({ playerId, hints = 0, setHints, onExit,
 
 const D = 80;
 const RING = D + 16;
+
+// font size by number of digits, so 3-digit numbers fit inside the disc (works on web and phone)
+const numSize = (label: string) => (label.length >= 3 ? 30 : label.length === 2 ? 38 : 42);
 
 const st = StyleSheet.create({
   root: { flex: 1, backgroundColor: SKY, overflow: 'hidden' },
@@ -467,7 +497,7 @@ const st = StyleSheet.create({
   grid: { width: RING * 2 + 24, flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', rowGap: 8 },
   ring: { width: RING, height: RING, borderRadius: RING / 2, borderWidth: 2, borderStyle: 'dashed', borderColor: 'rgba(255,255,255,0.95)', alignItems: 'center', justifyContent: 'center' },
   disc: { width: D, height: D, borderRadius: D / 2, backgroundColor: CREAM, borderWidth: 2.5, borderColor: CREAM_BORDER, alignItems: 'center', justifyContent: 'center', shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 6, shadowOffset: { width: 0, height: 3 }, elevation: 4 },
-  num: { fontFamily: FONT, fontSize: 40, fontWeight: '900', color: NAVY },
+  num: { fontFamily: FONT, fontSize: 40, fontWeight: '900', color: NAVY, paddingHorizontal: 6 },
   right: { backgroundColor: '#BFE3A8', borderColor: GREEN_OK },
   wrong: { backgroundColor: '#F4B7AE', borderColor: '#d9544a' },
 
@@ -480,7 +510,7 @@ const st = StyleSheet.create({
   retry: { backgroundColor: LIME, borderWidth: 3, borderColor: '#1b1b1b', borderRadius: 30, paddingHorizontal: 30, paddingVertical: 8 },
   retryT: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#1b1b1b' },
 
-  noteWrap: { position: 'absolute', left: 0, right: 0, bottom: 140, alignItems: 'center', zIndex: 20 },
+  noteWrap: { position: 'absolute', left: 0, right: 0, bottom: 140, alignItems: 'center', zIndex: 20, paddingHorizontal: 16 },
   note: { fontFamily: FONT, fontSize: 17, fontWeight: 'bold', color: '#c0392b', textAlign: 'center', backgroundColor: 'rgba(255,255,255,0.92)', paddingHorizontal: 14, paddingVertical: 4, borderRadius: 12, overflow: 'hidden' },
 
   // bottom wooden panel (smaller: solid wood, plank lines, corner rivets)
@@ -495,4 +525,16 @@ const st = StyleSheet.create({
   circleBtn: { width: 60, height: 60, borderRadius: 30, borderWidth: 5, alignItems: 'center', justifyContent: 'center', elevation: 6 },
   badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
   badgeT: { fontFamily: FONT, fontSize: 14, fontWeight: '900', color: '#fff' },
+
+  // HINTS popup (same as Level 19)
+  overlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(10,25,60,0.5)', alignItems: 'center', justifyContent: 'center', zIndex: 50, elevation: 50 },
+  clueCard: { width: '86%', maxWidth: 360, backgroundColor: CREAM, borderColor: WOOD_D, borderWidth: 6, borderRadius: 28, paddingHorizontal: 18, paddingTop: 18, paddingBottom: 10 },
+  clueTitle: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 14 },
+  closeBtn: { position: 'absolute', top: -4, right: -4, width: 38, height: 38, borderRadius: 19, backgroundColor: WOOD, borderWidth: 3, borderColor: WOOD_D, alignItems: 'center', justifyContent: 'center', zIndex: 2 },
+  clueRow: { flexDirection: 'row', alignItems: 'center', gap: 14, borderRadius: 22, borderWidth: 2.5, paddingVertical: 14, paddingHorizontal: 14, marginBottom: 12 },
+  clueRowOpen: { backgroundColor: '#fff', borderColor: GREEN_OK },
+  clueNum: { width: 52, height: 52, borderRadius: 26, backgroundColor: '#bd6b29', alignItems: 'center', justifyContent: 'center' },
+  clueNumT: { fontFamily: FONT, fontSize: 28, fontWeight: '900', color: '#fff' },
+  clueHead: { fontFamily: FONT, fontSize: 20, fontWeight: '900', color: '#bd6b29' },
+  clueBody: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', marginTop: 2 },
 });

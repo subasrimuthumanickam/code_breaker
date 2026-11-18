@@ -227,7 +227,7 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
   const [locked, setLocked] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const [explanation, setExplanation] = useState<string | null>(null);
-  const [clues, setClues] = useState<string[]>([]);
+  const [clues, setClues] = useState<string[]>([]);   // hint texts that came from the backend
   const [showClues, setShowClues] = useState(false);
 
   const shake = useRef(new Animated.Value(0)).current;
@@ -259,7 +259,7 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
       const d = await startLevel16(playerId);
       setSessionId(d.sessionId);
       setLevel(d.level);
-      setClues(d.clues ?? []);
+      setClues(d.clues ?? []);   // hints this session already used (stored in the database)
       if (typeof d.hints === 'number') setHints?.(d.hints);
     } catch (e: any) {
       setError(e?.message ?? 'Cannot load level 16');
@@ -326,26 +326,20 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
 
   /* ---------- bottom buttons ---------- */
 
-  // each tap buys the next clue; when all clues are bought it just opens the list
+  // tap the search button:
+  //  frontend -> POST /level16/hint -> backend saves the hint use in the database
+  //  -> backend answers JSON { hint: { number, text } } -> we show that text in the popup
   const handleHint = async () => {
     if (!sessionId || locked) return;
     play('clue');
-    const total = level?.hintCount ?? 3;
-    if (clues.filter(Boolean).length >= total) {
-      setShowClues(true);
-      return;
-    }
+    // ALWAYS ask the backend, every single tap (the backend saves the first use only once)
     try {
       const r = await hintLevel16(playerId, sessionId);
-      setClues((prev) => {
-        const copy = [...prev];
-        copy[r.hint.number - 1] = r.hint.text;
-        return copy;
-      });
-      setHints?.(r.hints);
+      setClues(r.clues && r.clues.length ? r.clues : [r.hint.text]);
+      if (typeof r.hints === 'number') setHints?.(r.hints);
       setShowClues(true);
     } catch (e: any) {
-      flash(e?.status === 402 ? 'Not enough hints' : 'Network error');
+      flash(e?.status === 402 ? 'Not enough hints' : e?.message || 'Network error');
     }
   };
 
@@ -491,7 +485,7 @@ export default function Btlevel16screen({ playerId, hints = 0, setHints, onExit,
           </View>
         </View>
 
-        {/* CLUES popup */}
+        {/* HINTS popup (texts come from the backend) */}
         {showClues && (
           <View style={st.overlay}>
             <View style={st.clueCard}>

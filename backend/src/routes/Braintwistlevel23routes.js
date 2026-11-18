@@ -1,3 +1,4 @@
+
 const express = require("express");
 const router = express.Router();
 const db = require("../db"); // same db import as Braintwistlevel22routes.js
@@ -7,6 +8,33 @@ const db = require("../db"); // same db import as Braintwistlevel22routes.js
 // and is the only one that decides if the tapped order is correct.
 const FACES = ["cool", "angry", "sick", "devil", "wink", "bandage", "star"];
 const REWARD_COINS = 75;
+
+// The hint is free (it never uses coins or the hint balance).
+// The text is sent by the backend, the frontend does not hardcode it.
+const HINT_TEXT =
+  "Look at the instruction at the top: \"Tap them in order\". Tap the faces in the same order as the small faces shown there, from left to right.";
+
+let hintLogReady;
+const ensureHintLogTable = () => {
+  if (!hintLogReady) {
+    hintLogReady = db.query(`
+      CREATE TABLE IF NOT EXISTS bt_level23_hint_logs (
+        id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+        session_id BIGINT UNSIGNED NOT NULL,
+        player_id VARCHAR(64) NOT NULL,
+        selected_order TEXT NOT NULL,
+        hint_index SMALLINT UNSIGNED NULL,
+        hint_face VARCHAR(20) NULL,
+        created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        INDEX idx_l23_hint_session (session_id, created_at)
+      )
+    `).catch((err) => {
+      hintLogReady = null;
+      throw err;
+    });
+  }
+  return hintLogReady;
+};
 
 const shuffle = (arr) => {
   const a = [...arr];
@@ -48,6 +76,76 @@ router.post("/start", async (req, res) => {
   } catch (err) {
     console.error("L23 start error:", err);
     res.status(500).json({ success: false, error: "Server error" });
+  }
+});
+
+// POST /api/braintwist/level23/hint
+// body: { playerId, sessionId, picked: ["cool", ...] }
+// Free hint: saves the hint use in MySQL and sends the hint text as JSON.
+router.post("/hint", async (req, res) => {
+  try {
+    const playerId = getPlayerId(req);
+    const { sessionId, picked } = req.body;
+    if (!playerId || !sessionId || !Array.isArray(picked)) {
+      return res.status(400).json({
+        success: false,
+        error: "playerId, sessionId and picked (array) required",
+      });
+    }
+
+    const validPicked =
+      picked.length <= FACES.length &&
+      new Set(picked).size === picked.length &&
+      picked.every((face) => FACES.includes(face));
+    if (!validPicked) {
+      return res.status(400).json({ success: false, error: "Invalid picked order" });
+    }
+
+    const [rows] = await db.query(
+      "SELECT sequence, status FROM bt_level23_sessions WHERE id = ? AND player_id = ?",
+      [sessionId, playerId]
+    );
+    if (!rows.length) {
+      return res.status(404).json({ success: false, error: "Session not found" });
+    }
+    if (rows[0].status === "completed") {
+      return res.status(409).json({ success: false, error: "Level already completed" });
+    }
+
+    const sequence = String(rows[0].sequence || "").split(",");
+    if (sequence.length !== FACES.length || !sequence.every((face) => FACES.includes(face))) {
+      throw new Error("Invalid sequence saved for level 23 session");
+    }
+
+    // which face comes next (saved in the log, the frontend does not need it)
+    const wrongAt = picked.findIndex((face, index) => face !== sequence[index]);
+    const hintFace = wrongAt < 0 ? sequence[picked.length] || null : null;
+
+    // save the hint use
+    await ensureHintLogTable();
+    await db.query(
+      `INSERT INTO bt_level23_hint_logs
+        (session_id, player_id, selected_order, hint_index, hint_face)
+       VALUES (?, ?, ?, ?, ?)`,
+      [
+        sessionId,
+        String(playerId),
+        JSON.stringify(picked),
+        hintFace ? picked.length + 1 : null,
+        hintFace,
+      ]
+    );
+
+    res.json({
+      success: true,
+      free: true,
+      cost: 0,
+      text: HINT_TEXT,
+      message: HINT_TEXT,
+    });
+  } catch (err) {
+    console.error("L23 hint error:", err);
+    res.status(500).json({ success: false, error: "Could not save level 23 hint" });
   }
 });
 

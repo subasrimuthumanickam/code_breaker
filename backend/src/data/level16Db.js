@@ -1,36 +1,299 @@
 
+// // // // const db = require('../db');
+
+// // // // const LEVEL = 16;
+
+
+
+// // // // const ANSWER = 'B';
+
+// // // // const LEVEL_DATA = {
+// // // //   level: LEVEL,
+// // // //   title: 'LEVEL 16',
+// // // //   subtitle: 'Only one person is lying…',
+// // // //   question: "Who didn't take the last slice of pizza?",
+// // // //   options: ['A', 'B', 'C', 'D'],
+// // // //   statements: [
+// // // //     { id: 'A', text: "I didn't take it!" },
+// // // //     { id: 'B', text: 'I was watching TV the whole time.' },
+// // // //     { id: 'C', text: "I didn't take it!" },
+// // // //     { id: 'D', text: "I didn't take it either!" },
+// // // //   ],
+// // // // };
+
+// // // // // one hint per use, in this order
+// // // // const HINTS = [
+// // // //   'Look carefully at the clues!',
+// // // //   'Check the whole room. Is there a TV anywhere?',
+// // // //   "Somebody's alibi doesn't match the room. Look at B.",
+// // // // ];
+
+// // // // const EXPLANATION =
+// // // //   'B is the liar. He says he was watching TV the whole time, but there is no TV in the room! ' +
+// // // //   'Also, there are crumbs on his plate, so his alibi is suspicious.';
+
+// // // // const one = async (sql, params = []) => {
+// // // //   const [rows] = await db.query(sql, params);
+// // // //   return rows[0] || null;
+// // // // };
+
+// // // // /* ---------------------------------------------------------
+// // // //    TABLES  (created once when the server starts)
+// // // //    bt_level16_sessions : one row per game
+// // // //    bt_level16_actions  : every answer / hint / skip the player did
+// // // // --------------------------------------------------------- */
+
+// // // // const ready = (async () => {
+// // // //   await db.query(`
+// // // //     CREATE TABLE IF NOT EXISTS bt_level16_sessions (
+// // // //       id INT AUTO_INCREMENT PRIMARY KEY,
+// // // //       player_id INT NOT NULL,
+// // // //       status VARCHAR(20) NOT NULL DEFAULT 'in_progress',
+// // // //       total_attempts INT NOT NULL DEFAULT 0,
+// // // //       wrong_attempts INT NOT NULL DEFAULT 0,
+// // // //       hints_used INT NOT NULL DEFAULT 0,
+// // // //       seconds INT NOT NULL DEFAULT 0,
+// // // //       started_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+// // // //       completed_at DATETIME NULL,
+// // // //       INDEX idx_l16_player (player_id)
+// // // //     )
+// // // //   `);
+
+// // // //   await db.query(`
+// // // //     CREATE TABLE IF NOT EXISTS bt_level16_actions (
+// // // //       id INT AUTO_INCREMENT PRIMARY KEY,
+// // // //       session_id INT NOT NULL,
+// // // //       action VARCHAR(20) NOT NULL,
+// // // //       value VARCHAR(30) NOT NULL DEFAULT '',
+// // // //       is_correct TINYINT(1) NOT NULL DEFAULT 0,
+// // // //       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+// // // //       INDEX idx_l16_session (session_id)
+// // // //     )
+// // // //   `);
+
+// // // //   console.log('[BrainTwist L16] tables ready');
+// // // // })().catch((err) =>
+// // // //   console.error('[BrainTwist L16] could not create tables:', err.message)
+// // // // );
+
+// // // // /* ---------------------------------------------------------
+// // // //    PLAYER / HINTS
+// // // // --------------------------------------------------------- */
+
+// // // // const getPlayer = (playerId) =>
+// // // //   one('SELECT id, hints FROM bt_players WHERE id = ?', [playerId]);
+
+// // // // const getHints = async (playerId) => {
+// // // //   const row = await one('SELECT hints FROM bt_players WHERE id = ?', [playerId]);
+// // // //   return row ? Number(row.hints) || 0 : 0;
+// // // // };
+
+// // // // // takes `amount` hints; null when the player does not have enough
+// // // // const spendHints = async (playerId, amount) => {
+// // // //   const [r] = await db.query(
+// // // //     'UPDATE bt_players SET hints = hints - ? WHERE id = ? AND hints >= ?',
+// // // //     [amount, playerId, amount]
+// // // //   );
+// // // //   if (!r.affectedRows) return null;
+// // // //   return getHints(playerId);
+// // // // };
+
+// // // // const addHints = async (playerId, amount) => {
+// // // //   await db.query('UPDATE bt_players SET hints = hints + ? WHERE id = ?', [amount, playerId]);
+// // // //   return getHints(playerId);
+// // // // };
+
+// // // // /* ---------------------------------------------------------
+// // // //    SESSIONS
+// // // // --------------------------------------------------------- */
+
+// // // // const SELECT_SESSION = `SELECT s.*, TIMESTAMPDIFF(SECOND, s.started_at, NOW()) AS elapsed
+// // // //                         FROM bt_level16_sessions s`;
+
+// // // // const getSession = (sessionId, playerId) =>
+// // // //   one(`${SELECT_SESSION} WHERE s.id = ? AND s.player_id = ?`, [sessionId, playerId]);
+
+// // // // const getActiveSession = (playerId) =>
+// // // //   one(
+// // // //     `${SELECT_SESSION} WHERE s.player_id = ? AND s.status = 'in_progress' ORDER BY s.id DESC LIMIT 1`,
+// // // //     [playerId]
+// // // //   );
+
+// // // // const createSession = async (playerId) => {
+// // // //   const [r] = await db.query('INSERT INTO bt_level16_sessions (player_id) VALUES (?)', [playerId]);
+// // // //   return one(`${SELECT_SESSION} WHERE s.id = ?`, [r.insertId]);
+// // // // };
+
+// // // // /* ---------------------------------------------------------
+// // // //    ACTIONS
+// // // // --------------------------------------------------------- */
+
+// // // // const recordAction = (sessionId, action, value = '', correct = false) =>
+// // // //   db.query(
+// // // //     'INSERT INTO bt_level16_actions (session_id, action, value, is_correct) VALUES (?, ?, ?, ?)',
+// // // //     [sessionId, action, String(value).slice(0, 30), correct ? 1 : 0]
+// // // //   );
+
+// // // // const addAttempt = (sessionId, wrong) =>
+// // // //   db.query(
+// // // //     `UPDATE bt_level16_sessions
+// // // //      SET total_attempts = total_attempts + 1,
+// // // //          wrong_attempts = wrong_attempts + ?
+// // // //      WHERE id = ?`,
+// // // //     [wrong ? 1 : 0, sessionId]
+// // // //   );
+
+// // // // const markHintUsed = (sessionId) =>
+// // // //   db.query('UPDATE bt_level16_sessions SET hints_used = hints_used + 1 WHERE id = ?', [sessionId]);
+
+// // // // const completeSession = (sessionId, seconds) =>
+// // // //   db.query(
+// // // //     "UPDATE bt_level16_sessions SET status = 'completed', seconds = ?, completed_at = NOW() WHERE id = ?",
+// // // //     [seconds, sessionId]
+// // // //   );
+
+// // // // const skipSession = (sessionId, seconds) =>
+// // // //   db.query(
+// // // //     "UPDATE bt_level16_sessions SET status = 'skipped', seconds = ?, completed_at = NOW() WHERE id = ?",
+// // // //     [seconds, sessionId]
+// // // //   );
+
+// // // // /* ---------------------------------------------------------
+// // // //    PROGRESS  (same tables every level uses)
+// // // // --------------------------------------------------------- */
+
+// // // // const saveProgress = async (playerId, score, stars, attempts) => {
+// // // //   const found = await one(
+// // // //     'SELECT id FROM brain_twist_progress WHERE player_id = ? AND level_number = ?',
+// // // //     [playerId, LEVEL]
+// // // //   );
+
+// // // //   if (found) {
+// // // //     await db.query(
+// // // //       `UPDATE brain_twist_progress
+// // // //        SET is_completed = 1,
+// // // //            score = GREATEST(COALESCE(score, 0), ?),
+// // // //            stars = GREATEST(COALESCE(stars, 0), ?),
+// // // //            attempts = COALESCE(attempts, 0) + ?,
+// // // //            completed_at = NOW()
+// // // //        WHERE id = ?`,
+// // // //       [score, stars, attempts, found.id]
+// // // //     );
+// // // //   } else {
+// // // //     await db.query(
+// // // //       `INSERT INTO brain_twist_progress
+// // // //         (player_id, level_number, is_completed, score, stars, attempts, completed_at)
+// // // //        VALUES (?, ?, 1, ?, ?, ?, NOW())`,
+// // // //       [playerId, LEVEL, score, stars, attempts]
+// // // //     );
+// // // //   }
+// // // // };
+
+// // // // const unlockNext = async (playerId, attempts) => {
+// // // //   await db.query(
+// // // //     `INSERT INTO bt_progress (player_id, level_n, attempts, solved_at)
+// // // //      VALUES (?, ?, ?, NOW())
+// // // //      ON DUPLICATE KEY UPDATE solved_at = COALESCE(solved_at, NOW())`,
+// // // //     [playerId, LEVEL, attempts]
+// // // //   );
+
+// // // //   await db.query(
+// // // //     `UPDATE bt_players
+// // // //      SET current_level = GREATEST(COALESCE(current_level, 1), ?)
+// // // //      WHERE id = ?`,
+// // // //     [LEVEL + 1, playerId]
+// // // //   );
+// // // // };
+
+// // // // const getProgress = (playerId) =>
+// // // //   one(
+// // // //     `SELECT is_completed, score, stars, attempts, completed_at
+// // // //      FROM brain_twist_progress WHERE player_id = ? AND level_number = ?`,
+// // // //     [playerId, LEVEL]
+// // // //   );
+
+// // // // module.exports = {
+// // // //   LEVEL,
+// // // //   ANSWER,
+// // // //   LEVEL_DATA,
+// // // //   HINTS,
+// // // //   EXPLANATION,
+// // // //   ready,
+// // // //   getPlayer,
+// // // //   getHints,
+// // // //   spendHints,
+// // // //   addHints,
+// // // //   getSession,
+// // // //   getActiveSession,
+// // // //   createSession,
+// // // //   recordAction,
+// // // //   addAttempt,
+// // // //   markHintUsed,
+// // // //   completeSession,
+// // // //   skipSession,
+// // // //   saveProgress,
+// // // //   unlockNext,
+// // // //   getProgress,
+// // // // };
 // // // const db = require('../db');
 
 // // // const LEVEL = 16;
 
+// // // /* ---------------------------------------------------------
+// // //    PUZZLE: "Find a frame for these colored objects."
+// // //    3 colored objects (pieces) must be put into 3 frames.
+// // //    ANSWER = which frame each piece goes into.
+// // //    (change ANSWER here if you want a different solution)
+// // // --------------------------------------------------------- */
 
+// // // const PIECE_IDS = ['red', 'green', 'cyan'];
+// // // const FRAME_IDS = ['f1', 'f2', 'f3'];
 
-// // // const ANSWER = 'B';
+// // // const ANSWER = {
+// // //   red: 'f1', // red square          -> square frame
+// // //   green: 'f2', // green triangle    -> triangle pointing down
+// // //   cyan: 'f3', // cyan triangle      -> triangle pointing up
+// // // };
+
+// // // const HINT_COST = 25;
+
+// // // // one clue per hint use, in this order
+// // // const HINTS = [
+// // //   'Start with the easiest one: the square.',
+// // //   'Two of the objects are triangles. Look at the two triangle frames.',
+// // //   'Red goes in the square, green in the triangle pointing down, cyan in the triangle pointing up.',
+// // // ];
 
 // // // const LEVEL_DATA = {
 // // //   level: LEVEL,
 // // //   title: 'LEVEL 16',
-// // //   subtitle: 'Only one person is lying…',
-// // //   question: "Who didn't take the last slice of pizza?",
-// // //   options: ['A', 'B', 'C', 'D'],
-// // //   statements: [
-// // //     { id: 'A', text: "I didn't take it!" },
-// // //     { id: 'B', text: 'I was watching TV the whole time.' },
-// // //     { id: 'C', text: "I didn't take it!" },
-// // //     { id: 'D', text: "I didn't take it either!" },
-// // //   ],
+// // //   subtitle: 'Tap an object, then tap its frame.',
+// // //   question: 'Find a frame for these colored objects.',
+// // //   pieces: PIECE_IDS,
+// // //   frames: FRAME_IDS,
+// // //   hintCount: HINTS.length,
+// // //   hintCost: HINT_COST,
 // // // };
 
-// // // // one hint per use, in this order
-// // // const HINTS = [
-// // //   'Look carefully at the clues!',
-// // //   'Check the whole room. Is there a TV anywhere?',
-// // //   "Somebody's alibi doesn't match the room. Look at B.",
-// // // ];
-
 // // // const EXPLANATION =
-// // //   'B is the liar. He says he was watching TV the whole time, but there is no TV in the room! ' +
-// // //   'Also, there are crumbs on his plate, so his alibi is suspicious.';
+// // //   'The red square fits the square frame, the green triangle fits the frame pointing down, ' +
+// // //   'and the cyan triangle fits the frame pointing up.';
+
+// // // // placements = { red: 'f1', green: 'f2', cyan: 'f3' }
+// // // const isValidPlacements = (p) => {
+// // //   if (!p || typeof p !== 'object') return false;
+// // //   const used = new Set();
+// // //   for (const piece of PIECE_IDS) {
+// // //     const frame = p[piece];
+// // //     if (!FRAME_IDS.includes(frame) || used.has(frame)) return false;
+// // //     used.add(frame);
+// // //   }
+// // //   return true;
+// // // };
+
+// // // const isCorrect = (p) => PIECE_IDS.every((piece) => p[piece] === ANSWER[piece]);
+
+// // // const placementKey = (p) => PIECE_IDS.map((piece) => `${piece}:${p[piece]}`).join(',');
 
 // // // const one = async (sql, params = []) => {
 // // //   const [rows] = await db.query(sql, params);
@@ -64,12 +327,15 @@
 // // //       id INT AUTO_INCREMENT PRIMARY KEY,
 // // //       session_id INT NOT NULL,
 // // //       action VARCHAR(20) NOT NULL,
-// // //       value VARCHAR(30) NOT NULL DEFAULT '',
+// // //       value VARCHAR(80) NOT NULL DEFAULT '',
 // // //       is_correct TINYINT(1) NOT NULL DEFAULT 0,
 // // //       created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 // // //       INDEX idx_l16_session (session_id)
 // // //     )
 // // //   `);
+
+// // //   // old table had VARCHAR(30); a placement like "red:f1,green:f2,cyan:f3" needs more room
+// // //   await db.query("ALTER TABLE bt_level16_actions MODIFY COLUMN `value` VARCHAR(80) NOT NULL DEFAULT ''");
 
 // // //   console.log('[BrainTwist L16] tables ready');
 // // // })().catch((err) =>
@@ -131,7 +397,7 @@
 // // // const recordAction = (sessionId, action, value = '', correct = false) =>
 // // //   db.query(
 // // //     'INSERT INTO bt_level16_actions (session_id, action, value, is_correct) VALUES (?, ?, ?, ?)',
-// // //     [sessionId, action, String(value).slice(0, 30), correct ? 1 : 0]
+// // //     [sessionId, action, String(value).slice(0, 80), correct ? 1 : 0]
 // // //   );
 
 // // // const addAttempt = (sessionId, wrong) =>
@@ -217,8 +483,12 @@
 // // //   ANSWER,
 // // //   LEVEL_DATA,
 // // //   HINTS,
+// // //   HINT_COST,
 // // //   EXPLANATION,
 // // //   ready,
+// // //   isValidPlacements,
+// // //   isCorrect,
+// // //   placementKey,
 // // //   getPlayer,
 // // //   getHints,
 // // //   spendHints,
@@ -267,7 +537,7 @@
 // // const LEVEL_DATA = {
 // //   level: LEVEL,
 // //   title: 'LEVEL 16',
-// //   subtitle: 'Tap an object, then tap its frame.',
+// //   subtitle: 'Drag each object into its frame.',
 // //   question: 'Find a frame for these colored objects.',
 // //   pieces: PIECE_IDS,
 // //   frames: FRAME_IDS,
@@ -519,25 +789,27 @@
 // const PIECE_IDS = ['red', 'green', 'cyan'];
 // const FRAME_IDS = ['f1', 'f2', 'f3'];
 
+// // All three colored objects go into the SQUARE frame (f1):
+// // the red square fits it, and the green + blue triangles together make a square too.
 // const ANSWER = {
-//   red: 'f1', // red square          -> square frame
-//   green: 'f2', // green triangle    -> triangle pointing down
-//   cyan: 'f3', // cyan triangle      -> triangle pointing up
+//   red: 'f1',
+//   green: 'f1',
+//   cyan: 'f1',
 // };
 
-// const HINT_COST = 25;
+// const HINT_COST = 0;
 
 // // one clue per hint use, in this order
 // const HINTS = [
-//   'Start with the easiest one: the square.',
-//   'Two of the objects are triangles. Look at the two triangle frames.',
-//   'Red goes in the square, green in the triangle pointing down, cyan in the triangle pointing up.',
+//   'Look at the shapes. Can two shapes make a bigger one?',
+//   'Two right triangles can be joined to make a square.',
+//   'Drag the green and blue triangles onto the red square, inside the square frame.',
 // ];
 
 // const LEVEL_DATA = {
 //   level: LEVEL,
 //   title: 'LEVEL 16',
-//   subtitle: 'Drag each object into its frame.',
+//   subtitle: 'Drag the objects into the right frame.',
 //   question: 'Find a frame for these colored objects.',
 //   pieces: PIECE_IDS,
 //   frames: FRAME_IDS,
@@ -546,19 +818,13 @@
 // };
 
 // const EXPLANATION =
-//   'The red square fits the square frame, the green triangle fits the frame pointing down, ' +
-//   'and the cyan triangle fits the frame pointing up.';
+//   'The two triangles join together to make a square, and the red square is a square too. ' +
+//   'So the square frame fits all the colored objects.';
 
-// // placements = { red: 'f1', green: 'f2', cyan: 'f3' }
+// // placements = { red: 'f1', green: 'f1', cyan: 'f1' }  (several objects can share a frame)
 // const isValidPlacements = (p) => {
 //   if (!p || typeof p !== 'object') return false;
-//   const used = new Set();
-//   for (const piece of PIECE_IDS) {
-//     const frame = p[piece];
-//     if (!FRAME_IDS.includes(frame) || used.has(frame)) return false;
-//     used.add(frame);
-//   }
-//   return true;
+//   return PIECE_IDS.every((piece) => FRAME_IDS.includes(p[piece]));
 // };
 
 // const isCorrect = (p) => PIECE_IDS.every((piece) => p[piece] === ANSWER[piece]);
@@ -783,7 +1049,6 @@ const LEVEL = 16;
    PUZZLE: "Find a frame for these colored objects."
    3 colored objects (pieces) must be put into 3 frames.
    ANSWER = which frame each piece goes into.
-   (change ANSWER here if you want a different solution)
 --------------------------------------------------------- */
 
 const PIECE_IDS = ['red', 'green', 'cyan'];
@@ -799,11 +1064,9 @@ const ANSWER = {
 
 const HINT_COST = 0;
 
-// one clue per hint use, in this order
+// the ONE hint of this level (sent to the app by POST /level16/hint)
 const HINTS = [
-  'Look at the shapes. Can two shapes make a bigger one?',
-  'Two right triangles can be joined to make a square.',
-  'Drag the green and blue triangles onto the red square, inside the square frame.',
+  'Match all the colored objects to the frame, not only look at a single object. Look for two objects that form the shape of the frame together.',
 ];
 
 const LEVEL_DATA = {
@@ -838,7 +1101,7 @@ const one = async (sql, params = []) => {
 
 /* ---------------------------------------------------------
    TABLES  (created once when the server starts)
-   bt_level16_sessions : one row per game
+   bt_level16_sessions : one row per game (hints_used is stored here)
    bt_level16_actions  : every answer / hint / skip the player did
 --------------------------------------------------------- */
 

@@ -20,11 +20,9 @@ const FIGURES = [
 
 const ANSWER = 4;
 
-// clues, one more each time the magnifier is used
+// the ONLY hint of this level
 const HINTS = [
   "Don't count the lines. Count the moments when their paths cross.",
-  'Every line across crosses every line down. 3 across and 3 down cross 9 times.',
-  'The last picture has 2 lines across and 2 lines down, so they cross 2 x 2 times.',
 ];
 
 // score from the number of answers (wrong ones + the right one)
@@ -179,7 +177,8 @@ r.post('/answer', handle(async (req, res) => {
 
 /* ---------------------------------------------------------
    POST /hint   body: { sessionId, playerId }   (free)
-   a new clue each time; returns the clue number too
+   This level has ONE hint. The first use is saved in the database,
+   asking again returns the same hint and does not save another use.
 --------------------------------------------------------- */
 
 r.post('/hint', handle(async (req, res) => {
@@ -192,11 +191,11 @@ r.post('/hint', handle(async (req, res) => {
 
   const used = Number(session.hints_used) || 0;
   const idx = Math.min(used, HINTS.length - 1);
-  await L19.markHintUsed(sessionId);
+  if (used < HINTS.length) await L19.markHintUsed(sessionId);
 
   res.json({
     success: true,
-    index: idx + 1,          // 1, 2, 3
+    index: idx + 1,          // always 1
     text: HINTS[idx],
     hints,
     cost: 0,

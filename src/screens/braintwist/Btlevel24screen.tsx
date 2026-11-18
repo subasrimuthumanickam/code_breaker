@@ -1,14 +1,16 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, Animated, Easing, StyleSheet, ScrollView,
+  View, Text, TouchableOpacity, Pressable, Animated, Easing, StyleSheet, ScrollView, Platform,
 } from 'react-native';
 import Svg, { Rect, Path, Circle, Ellipse, G, Polygon, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { Stage, F, Coin } from './BTShared';
 import { Icon } from './Art';
 import * as api from './api';
-import { answerLevel24 } from './Btlevel24api';
+import { answerLevel24, requestLevel24Hint } from './Btlevel24api';
 import { play } from './BTSound';
+
+const SERIF: any = Platform.select({ web: '"Playfair Display",Georgia,"Times New Roman",serif', ios: 'Georgia-Italic', default: 'serif' });
 
 const QUESTION =
   'When I was 4 years old, my younger sister was half my age. If I am now 20 years old, how old is my younger sister?';
@@ -212,6 +214,35 @@ const Badge = ({ id, main, light }: { id: string; main: string; light: string })
   </View>
 );
 
+/* ---------- hints popup (same look as Level 22 / 23) ---------- */
+function HintsModal({ text, onClose }: { text: string; onClose: () => void }) {
+  const pop = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.spring(pop, { toValue: 1, friction: 7, tension: 90, useNativeDriver: true }).start();
+  }, []);
+  return (
+    <View style={s.overlay}>
+      {/* tap outside the card to close */}
+      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+      <Animated.View style={[s.hintCard, { opacity: pop, transform: [{ scale: pop.interpolate({ inputRange: [0, 1], outputRange: [0.85, 1] }) }] }]}>
+        <Text style={s.hintTitle}>HINTS</Text>
+        <View style={s.hintBox}>
+          <View style={s.hintNum}>
+            <Text style={s.hintNumT}>1</Text>
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.hintHead}>Hint 1</Text>
+            <Text style={s.hintText}>{text}</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={s.hintClose} activeOpacity={0.85} onPress={onClose}>
+          <Text style={s.hintCloseT}>✕</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </View>
+  );
+}
+
 /* =====================  SCREEN  ===================== */
 type Props = {
   playerId: number | string;
@@ -225,7 +256,7 @@ export default function BTLevel24Screen({ playerId, hints, setHints, onExit, onC
   const [picked, setPicked] = useState<string | null>(null);
   const [status, setStatus] = useState<'idle' | 'wrong' | 'right'>('idle');
   const [err, setErr] = useState('');
-  const [hidden, setHidden] = useState<string[]>([]);
+  const [hintText, setHintText] = useState<string | null>(null);
   const busy = useRef(false);
   const actBusy = useRef(false);
   const tries = useRef(0);
@@ -263,7 +294,7 @@ export default function BTLevel24Screen({ playerId, hints, setHints, onExit, onC
   };
 
   const onPick = async (id: string) => {
-    if (busy.current || status === 'right') return;
+    if (busy.current || status === 'right' || hintText) return;
     busy.current = true;
     setPicked(id);
     tries.current += 1;
@@ -288,20 +319,25 @@ export default function BTLevel24Screen({ playerId, hints, setHints, onExit, onC
     }
   };
 
-  // magnifier (25 hints): removes one wrong answer
+  // magnifier (free): frontend sends the request, backend reads the hint from the DB,
+  // saves the usage and replies in JSON; the text is shown in the popup
   const useHint = async () => {
-    if (actBusy.current || status === 'right') return;
+    if (actBusy.current || status === 'right' || hintText) return;
     play('clue');
-    const wrong = OPTIONS.filter((o) => o.id !== 'C' && !hidden.includes(o.id));
-    if (!wrong.length) { flash('Only one answer left!'); return; }
     actBusy.current = true;
     try {
-      const r = await api.recordHintUse(24, playerId);
-      if (typeof r?.hints === 'number') setHints?.(r.hints);
-      setHidden((h) => [...h, wrong[0].id]);
+      const r = await requestLevel24Hint(playerId);
+      const text = r?.text || r?.message;
+      if (r?.success && text) setHintText(text);
+      else flash('Hint not available');
     } catch (e: any) {
       flash(e?.message || 'Network error');
     } finally { actBusy.current = false; }
+  };
+
+  const closeHint = () => {
+    play('btn');
+    setHintText(null);
   };
 
   const watchVideo = async () => {
@@ -387,13 +423,11 @@ export default function BTLevel24Screen({ playerId, hints, setHints, onExit, onC
               const isRight = p && status === 'right';
               const isWrong = p && status === 'wrong';
               const bg = isRight ? '#d4f5cd' : isWrong ? '#ffd0d0' : o.bg;
-              const gone = hidden.includes(o.id);
               return (
                 <TouchableOpacity
                   key={o.id}
                   activeOpacity={0.85}
-                  disabled={gone}
-                  style={[s.option, { backgroundColor: bg, borderColor: o.border, opacity: gone ? 0.2 : 1 }]}
+                  style={[s.option, { backgroundColor: bg, borderColor: o.border }]}
                   onPress={() => onPick(o.id)}
                 >
                   <View style={[s.dashed, { borderColor: o.dash }]} pointerEvents="none" />
@@ -439,6 +473,9 @@ export default function BTLevel24Screen({ playerId, hints, setHints, onExit, onC
             <View style={s.badge}><Icon n="bulb" s={15} /><Text style={s.badgeT}>{SKIP_COST}</Text></View>
           </View>
         </View>
+
+        {/* hint popup (text comes from the backend / database) */}
+        {!!hintText && <HintsModal text={hintText} onClose={closeHint} />}
       </View>
     </Stage>
   );
@@ -500,4 +537,31 @@ const s = StyleSheet.create({
   circleBtn: { width: 60, height: 60, borderRadius: 30, borderWidth: 5, alignItems: 'center', justifyContent: 'center', elevation: 6 },
   badge: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 3, marginTop: 5, minWidth: 62, paddingHorizontal: 10, height: 26, borderRadius: 13, backgroundColor: BADGE },
   badgeT: { fontFamily: F, fontSize: 14, fontWeight: '900', color: '#fff' },
+
+  /* hint popup */
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(30,40,60,0.55)',
+    alignItems: 'center', justifyContent: 'center',
+    paddingHorizontal: 14, zIndex: 100, elevation: 20,
+  },
+  hintCard: {
+    width: '100%', maxWidth: 400, backgroundColor: CREAM, borderRadius: 30,
+    borderWidth: 5, borderColor: '#c9792b', paddingHorizontal: 16, paddingTop: 18, paddingBottom: 20,
+    elevation: 24,
+  },
+  hintTitle: { fontFamily: F, fontSize: 34, fontWeight: '900', color: NAVY, textAlign: 'center', marginBottom: 14 },
+  hintBox: {
+    flexDirection: 'row', alignItems: 'center', gap: 14, backgroundColor: '#fffaf1',
+    borderRadius: 20, borderWidth: 3, borderColor: '#3cc15a', paddingVertical: 14, paddingHorizontal: 14,
+  },
+  hintNum: { width: 54, height: 54, borderRadius: 27, backgroundColor: '#b8651f', alignItems: 'center', justifyContent: 'center' },
+  hintNumT: { fontFamily: F, fontSize: 30, fontWeight: '900', color: '#fff' },
+  hintHead: { fontFamily: SERIF, fontSize: 20, fontWeight: '700', color: '#b8651f', marginBottom: 2 },
+  hintText: { fontFamily: SERIF, fontSize: 16, fontStyle: 'italic', color: '#17307a', lineHeight: 21 },
+  hintClose: {
+    position: 'absolute', top: -16, right: -12, width: 42, height: 42, borderRadius: 21,
+    backgroundColor: '#f4a24c', borderWidth: 3, borderColor: '#c9792b', alignItems: 'center', justifyContent: 'center', elevation: 26,
+  },
+  hintCloseT: { fontFamily: F, fontSize: 22, fontWeight: '900', color: '#e5484d', lineHeight: 26 },
 });
